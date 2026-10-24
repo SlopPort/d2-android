@@ -23,7 +23,7 @@ There are four ways:
 | 1.11 | Hirelings for hire 1-5 levels below the player; faster hireling XP | To do (check code) |
 | 1.11 | Fixes: Diablo's seals, "missile firing too far", set bonuses kept after death, Trang-Oul invincibility, charged skills giving synergies, ethereal stats kept by transmute | To do (check each) |
 | 1.13c | Respec with the Token of Absolution | Done, from the 1.14d binary (d2test `D2RESPEC=1`) |
-| 1.13c | Free respec from Akara after the Den of Evil | To do |
+| 1.13c | Free respec from Akara after the Den of Evil | To do, with NPC talk. In 1.14d it is a quest record (id 30) in `a1q1.cpp` code using quest flag 0x29: NPC menu command 0x94 handled at `Game.0x57A1C5` (grants the flag in Hell to characters that finished the Den earlier, `0x58FD20`; resets via the same functions as the token, then clears the flag, `0x58FD50`); quest callbacks from `0x58FDD0` |
 | 1.13c | Higher high-rune drop rates, Fire Enchanted explosion damage, Oblivion Knight without Iron Maiden, Hellfire Torch proc 5%, Fangskin Hell loot | Data |
 | 1.13c | Uber minions give no experience | Switch |
 | 1.13c | Uber Mephisto checks both Uber Diablo and Uber Baal | To do (check) |
