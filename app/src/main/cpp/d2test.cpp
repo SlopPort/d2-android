@@ -121,6 +121,13 @@ int main(int argc, char** argv) {
 			}
 			sgame_player_state(s);
 			printf("hero at %d,%d mode %d after\n", s[0], s[1], s[4]);
+			// Trade (0x38 action 1): the store is filled into the NPC's inventory.
+			sgame_npc_action(1, npc, 0);
+			for (int k = 0; k < 10; ++k) { usleep(40000); sgame_tick(); }
+			std::vector<InvItem> store;
+			sgame_inventory(store, npc);
+			printf("Charsi sells %zu items\n", store.size());
+			for (size_t k = 0; k < store.size() && k < 12; ++k) printf("  %s page %d at %d,%d size %dx%d\n", store[k].file.c_str(), store[k].page, store[k].x, store[k].y, store[k].w, store[k].h);
 			gPacketLog = nullptr;
 		}
 		if (getenv("D2RESPEC")) {

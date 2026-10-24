@@ -315,10 +315,10 @@ void sgame_debug_set_life(int nLife) {
 
 // The hero's items as the inventory panel needs them: {invfile, page, body location, x, y, w, h}
 // per item. x/y are grid cells (the item's static path in inventories).
-void sgame_inventory(std::vector<InvItem>& out) {
+void sgame_inventory(std::vector<InvItem>& out, int nNpcGuid) {
 	out.clear();
 	withGame([&](D2GameStrc* pGame) {
-		D2UnitStrc* u = player(pGame);
+		D2UnitStrc* u = nNpcGuid >= 0 ? SUNIT_GetServerUnit(pGame, UNIT_MONSTER, nNpcGuid) : player(pGame);
 		if (!u || !u->pInventory) return;
 		for (D2UnitStrc* i = INVENTORY_GetFirstItem(u->pInventory); i; i = INVENTORY_GetNextItem(i)) {
 			D2ItemsTxt* r = DATATBLS_GetItemsTxtRecord(i->dwClassId);
@@ -445,3 +445,19 @@ void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints) {
 	for (int i = 0; i < nStatPoints; ++i) { uint8_t p[3] = {0x3A, (uint8_t)(i % 4 == 0 ? 0 : i % 4 == 1 ? 2 : i % 4 == 2 ? 3 : 1), 0}; loopback_send(1, kClientId, p, 3); }
 }
 
+
+// NPC dialog actions as the client sends them (packet 0x38): 1 trade, 2 gamble, 3 hire...
+void sgame_npc_action(int nAction, int nNpcGuid, int nItemGuid) {
+	if (!sgame_ready()) return;
+	D2GSPacketClt38 p = {};
+	p.nHeader = 0x38; p.nAction = (uint32_t)nAction; p.nNpcGUID = nNpcGuid; p.nItemGUID = nItemGuid;
+	loopback_send(1, kClientId, &p, sizeof p);
+}
+
+// End the talk with an NPC (packet 0x30), as the client does when its panel closes.
+void sgame_npc_close(int nNpcGuid) {
+	if (!sgame_ready()) return;
+	uint8_t p[9] = {0x30, 1, 0, 0, 0};
+	memcpy(p + 5, &nNpcGuid, 4);
+	loopback_send(1, kClientId, p, sizeof p);
+}

@@ -47,7 +47,8 @@ void sgame_debug_set_life(int nLife);
 // One item of the hero's inventory (see sgame_inventory).
 struct InvItem { std::string file; int page, bodyLoc, x, y, w, h, guid, mode; };
 #include <vector>
-void sgame_inventory(std::vector<InvItem>& out);
+// The hero's items, or with nNpcGuid >= 0 that NPC's (a vendor's store after packet 0x38).
+void sgame_inventory(std::vector<InvItem>& out, int nNpcGuid = -1);
 // Inventory panel layout (800x600) from inventory.txt; out has 72 ints (see sgame.cpp).
 bool sgame_inventory_layout(int* out);
 
@@ -61,3 +62,7 @@ void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints);
 
 // Test only: when set, sgame_tick appends every server-to-client packet here.
 extern std::vector<std::vector<uint8_t>>* gPacketLog;
+
+// NPC dialog: packet 0x38 action (1 trade, 2 gamble, 3 hire) and 0x30 to end the talk.
+void sgame_npc_action(int nAction, int nNpcGuid, int nItemGuid);
+void sgame_npc_close(int nNpcGuid);
