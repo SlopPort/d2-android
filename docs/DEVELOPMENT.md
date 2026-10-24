@@ -24,7 +24,7 @@
 | `D2DIRS=1` | prints D2 directions for 8 vectors |
 | `D2EXIT=1` (with `D2SERVER`) | walks the hero from the camp into Blood Moor with the route helper (`route.cpp`: BFS over D2 collision of loaded rooms), hunts the nearest monsters and prints combat stats and hero life; after frame 1300 it picks up nearby loot and prints gold and inventory item count. See "Reference seed" below |
 | `D2DEATH=1` (with `D2EXIT`) | sets hero life to 1 at the first attack, waits for `PLRMODE_DEAD`, sends packet 0x41 and checks the hero is back in camp with full life |
-| `D2TALK=1` (with `D2SERVER`) | walks to Charsi, clicks her (0x13) and prints every server packet (expects 0x27, the NPC interaction) |
+| `D2TALK=1` (with `D2SERVER`) | walks to Charsi, clicks her (0x13; expects packet 0x27), opens her store (0x38) and buys the first item (0x32) with 5000 gold |
 | `D2RESPEC=1` (with `D2SERVER`) | spends 8 stat points (packet 0x3A) and 3 levels of Bash, uses a Token of Absolution (0x20) and prints the character before and after |
 | `D2TXT=1` | compile tables from `.txt` instead of loading the game's `.bin` |
 | 3rd argument | directory with reference `.bin` files: compares our compiled tables |

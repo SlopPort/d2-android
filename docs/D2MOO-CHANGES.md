@@ -19,6 +19,7 @@ D2MOO upstream commit: see `third_party/D2MOO-UPSTREAM.txt`. The full diff of D2
 | `D2Game/src/UNIT/SUnitInactive.cpp` | `SUNITINACTIVE_CompressUnitIfNeeded` reads the unit type once, before compressing | compressing a ground item frees it; D2MOO then read `dwUnitType` from freed memory (the original kept it in a register) and crashed when the hero left loot behind |
 | `D2Game/src/ITEMS/ItemMode.cpp` | `sub_6FC4A9B0` equips the item at the body location `sub_6FC42F20` found | D2MOO passed the caller's 0 (meant as "skip requirement check") on as the body location, so picking up an equippable item asserted |
 | `D2Game/src/PLAYER/PlayerStats.cpp`, `D2Game/src/ITEMS/ItemMode.cpp` | added `PLAYERSTATS_ResetStats`/`ResetSkills` and the Token of Absolution (`toa`) branch of the quest-item use, from 1.14d `Game.0x570C80`, `0x570360`, `0x55E52A` (1.13+ builds only) | respec is a 1.13c feature D2MOO does not have; every call was matched to its D2MOO function by its code |
+| `D2Game/src/UNIT/SUnitNpc.cpp` | implemented `sub_6FCC88B0` (buying from a vendor) from its decompilation comment | stub that returned 0: nothing could be bought |
 | `D2Common/src/Path/Step.cpp` | the 1.13c call `PATH_RecacheRoomIfNeeded(path, x, y, room)` is skipped on Android | D2MOO has no such overload; the 1.14d build keeps 1.10f behaviour there (`UNVERIFIED`) |
 
 `UNVERIFIED` in `MonsterSpawn.cpp`: the four offsets `unk_6FD28BC8` used when placing SpawnCol=1

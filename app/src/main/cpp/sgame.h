@@ -66,3 +66,8 @@ extern std::vector<std::vector<uint8_t>>* gPacketLog;
 // NPC dialog: packet 0x38 action (1 trade, 2 gamble, 3 hire) and 0x30 to end the talk.
 void sgame_npc_action(int nAction, int nNpcGuid, int nItemGuid);
 void sgame_npc_close(int nNpcGuid);
+
+// Vendor: price (client side, ITEMS_GetTransactionCost) and buy (0x32).
+int sgame_item_price(int nNpcGuid, int nItemGuid, int nTransactionType);
+void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost);
+void sgame_debug_set_gold(int nGold);

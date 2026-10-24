@@ -461,3 +461,29 @@ void sgame_npc_close(int nNpcGuid) {
 	memcpy(p + 5, &nNpcGuid, 4);
 	loopback_send(1, kClientId, p, sizeof p);
 }
+
+// Price of an item in a vendor's store for the hero, as the client computes it before buying.
+int sgame_item_price(int nNpcGuid, int nItemGuid, int nTransactionType) {
+	int cost = -1;
+	withGame([&](D2GameStrc* pGame) {
+		D2UnitStrc* u = player(pGame);
+		D2UnitStrc* npc = SUNIT_GetServerUnit(pGame, UNIT_MONSTER, nNpcGuid);
+		D2UnitStrc* item = SUNIT_GetServerUnit(pGame, UNIT_ITEM, nItemGuid);
+		if (!u || !npc || !item) return;
+		cost = ITEMS_GetTransactionCost(u, item, (D2C_Difficulties)pGame->nDifficulty, UNITS_GetPlayerData(u)->pQuestData[pGame->nDifficulty], npc->dwClassId, (D2C_TransactionTypes)nTransactionType);
+	});
+	return cost;
+}
+
+// Buy (packet 0x32) from the vendor the hero is talking to; nTab 0 for a normal purchase.
+void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost) {
+	if (!sgame_ready()) return;
+	D2GSPacketClt32 p = {};
+	p.nHeader = 0x32; p.dwNpcGUID = nNpcGuid; p.dwItemGUID = nItemGuid; p.nItemMode = (uint16_t)nTab; p.dwCost = nCost;
+	loopback_send(1, kClientId, &p, sizeof p);
+}
+
+// Test only: set the hero's gold.
+void sgame_debug_set_gold(int nGold) {
+	withGame([&](D2GameStrc* pGame) { if (D2UnitStrc* u = player(pGame)) STATLIST_SetUnitStat(u, STAT_GOLD, nGold, 0); });
+}

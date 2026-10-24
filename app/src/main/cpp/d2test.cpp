@@ -128,6 +128,17 @@ int main(int argc, char** argv) {
 			sgame_inventory(store, npc);
 			printf("Charsi sells %zu items\n", store.size());
 			for (size_t k = 0; k < store.size() && k < 12; ++k) printf("  %s page %d at %d,%d size %dx%d\n", store[k].file.c_str(), store[k].page, store[k].x, store[k].y, store[k].w, store[k].h);
+			// Buy the first item (0x32) with 5000 gold.
+			if (!store.empty()) {
+				sgame_debug_set_gold(5000);
+				int price = sgame_item_price(npc, store[0].guid, 0);
+				std::vector<InvItem> before; sgame_inventory(before);
+				sgame_buy(npc, store[0].guid, 0, price);
+				for (int k = 0; k < 10; ++k) { usleep(40000); sgame_tick(); }
+				std::vector<InvItem> after; sgame_inventory(after);
+				int goods[2]; sgame_player_goods(goods);
+				printf("bought %s for %d: gold now %d, hero items %zu -> %zu\n", store[0].file.c_str(), price, goods[0], before.size(), after.size());
+			}
 			gPacketLog = nullptr;
 		}
 		if (getenv("D2RESPEC")) {
