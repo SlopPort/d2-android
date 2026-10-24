@@ -29,8 +29,9 @@ Target: vanilla Diablo II: Lord of Destruction 1.14d. Mod support comes after th
 
 ## Next
 
-1. **1.10f → 1.14d.** Catalogue every gameplay and data difference between D2MOO's 1.10f and
-   1.14d (table layouts, formulas, rules changed by later patches), then port them.
+1. **1.10f → 1.14d.** Catalogued in [VERSION-DIFFERENCES](VERSION-DIFFERENCES.md); the build
+   already uses D2MOO's 1.14d switches. Next: check and port the "To do" rows (respec, hirelings,
+   aura and skill fixes), then test the Uber Tristram event.
 2. **NPCs** — interaction, dialogue menus, trade, quests (Den of Evil first).
 3. **Character progression** — experience and levels, stat and skill points.
 4. **Saving** — `.d2s` writing (D2Game does it; point `FOG_GetSavePath` at app storage).

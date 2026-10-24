@@ -6,8 +6,9 @@ spirit of DevilutionX: the same server code, the same random rolls, the same 25 
 second, the same animations. It is not a remake.
 
 **Target:** unmodified Diablo II: Lord of Destruction at the last official patch, **1.14d**.
-D2MOO reproduces patch 1.10f, so the differences between 1.10f and 1.14d still have to be ported
-(see the [roadmap](docs/ROADMAP.md)). Mod support comes later.
+D2MOO reproduces patch 1.10f. The build turns on D2MOO's code for later patches, and the 1.14d data
+brings the balance changes; what is still missing is listed in
+[VERSION-DIFFERENCES](docs/VERSION-DIFFERENCES.md). Mod support comes later.
 
 > **No game files are included and none will be.** You need your own copy of Diablo II: Lord of
 > Destruction; the app reads your MPQ archives (`patch_d2.mpq`, `d2exp.mpq`, `d2char.mpq`,
