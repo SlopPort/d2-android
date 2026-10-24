@@ -71,3 +71,4 @@ void sgame_npc_close(int nNpcGuid);
 int sgame_item_price(int nNpcGuid, int nItemGuid, int nTransactionType);
 void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost);
 void sgame_debug_set_gold(int nGold);
+void sgame_sell(int nNpcGuid, int nItemGuid, int nPrice);

@@ -487,3 +487,11 @@ void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost) {
 void sgame_debug_set_gold(int nGold) {
 	withGame([&](D2GameStrc* pGame) { if (D2UnitStrc* u = player(pGame)) STATLIST_SetUnitStat(u, STAT_GOLD, nGold, 0); });
 }
+
+// Sell (packet 0x33) an item of the hero to the vendor he is talking to; nPrice from sgame_item_price(..., 1).
+void sgame_sell(int nNpcGuid, int nItemGuid, int nPrice) {
+	if (!sgame_ready()) return;
+	D2GSPacketClt33 p = {};
+	p.nHeader = 0x33; p.dwMonGUID = (uint32_t)nNpcGuid; p.dwItemGUID = (uint32_t)nItemGuid; p.dwGold = (uint32_t)nPrice;
+	loopback_send(1, kClientId, &p, sizeof p);
+}

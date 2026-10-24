@@ -138,6 +138,15 @@ int main(int argc, char** argv) {
 				std::vector<InvItem> after; sgame_inventory(after);
 				int goods[2]; sgame_player_goods(goods);
 				printf("bought %s for %d: gold now %d, hero items %zu -> %zu\n", store[0].file.c_str(), price, goods[0], before.size(), after.size());
+				// Sell it back (0x33).
+				int bought = -1;
+				for (const InvItem& a : after) { bool old = false; for (const InvItem& b : before) old |= a.guid == b.guid; if (!old) bought = a.guid; }
+				int sellPrice = sgame_item_price(npc, bought, 1);
+				sgame_sell(npc, bought, sellPrice);
+				for (int k = 0; k < 10; ++k) { usleep(40000); sgame_tick(); }
+				std::vector<InvItem> sold; sgame_inventory(sold);
+				sgame_player_goods(goods);
+				printf("sold it for %d: gold now %d, hero items %zu\n", sellPrice, goods[0], sold.size());
 			}
 			gPacketLog = nullptr;
 		}
