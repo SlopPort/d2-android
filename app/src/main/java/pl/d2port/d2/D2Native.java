@@ -100,8 +100,19 @@ public final class D2Native {
     public static native int[] automapCells(long act);
     /** All frames of a DC6 file (game path): {count, then per frame width, height, offX, offY, argb...}. */
     public static native int[] dc6Frames(String path);
-    /** Hero inventory: {int[72] panel layout (inventory.txt, 800x600), String[] item DC6s, int[] per item {page, body location, x, y, w, h, guid, mode}}. */
-    public static native Object[] inventory();
+    /** Inventory of the hero (npcGuid -1) or of an NPC (a vendor's store): {int[72] panel layout (inventory.txt, 800x600), String[] item DC6s, int[] per item {page, body location, x, y, w, h, guid, mode}}. */
+    public static native Object[] inventory(int npcGuid);
+    /** NPC dialog: 0x38 action (1 trade, 2 gamble, 3 hire) and 0x30 to end the talk. */
+    public static native void npcAction(int action, int npcGuid, int itemGuid);
+    public static native void npcClose(int npcGuid);
+    /** Price of an item for the hero at this vendor (type 0 buy, 1 sell), as the client computes it. */
+    public static native int itemPrice(int npcGuid, int itemGuid, int type);
+    public static native void buy(int npcGuid, int itemGuid, int cost);
+    public static native void sell(int npcGuid, int itemGuid, int price);
+    /** Guid of the NPC the hero is talking to, or -1. */
+    public static native int interactingWith();
+    /** Whether monsters of this class can be talked to (monstats interact flag). */
+    public static native boolean npcInteractable(int classId);
     /** Item move packet 0x17/0x18/0x19/0x1A/0x1C/0x1D (see sgame_item_command). */
     public static native void itemCommand(int command, int guid, int a, int b, int c);
     /** Developer helper: one walk command along a route towards a level (false when there or no route). */

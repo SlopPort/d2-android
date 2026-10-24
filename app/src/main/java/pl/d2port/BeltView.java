@@ -32,7 +32,7 @@ final class BeltView extends View {
     void update() {
         int slot = pendingSlot;
         if (slot >= 0) { pendingSlot = -1; if (guids[slot] >= 0) D2Native.itemCommand(0x26, guids[slot], 0, 0, 0); }
-        Object[] inv = D2Native.inventory();
+        Object[] inv = D2Native.inventory(-1);
         if (inv == null) return;
         String[] files = (String[]) inv[1];
         int[] d = (int[]) inv[2];

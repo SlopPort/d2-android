@@ -32,7 +32,7 @@ Target: vanilla Diablo II: Lord of Destruction 1.14d. Mod support comes after th
 1. **1.10f → 1.14d.** Catalogued in [VERSION-DIFFERENCES](VERSION-DIFFERENCES.md); the build
    already uses D2MOO's 1.14d switches. Next: check and port the "To do" rows (respec, hirelings,
    aura and skill fixes), then test the Uber Tristram event.
-2. **NPCs** — interaction, dialogue menus, trade, quests (Den of Evil first).
+2. **NPCs** — trade works (talk 0x13, store 0x38, buy 0x32 from decompiled D2MOO code, sell 0x33; "Rozmowa" button walks to the nearest NPC). Next: dialogue menu and texts, gambling, repair, hirelings, quests (Den of Evil first, then Akara's respec).
 3. **Character progression** — experience and levels, stat and skill points.
 4. **Saving** — `.d2s` writing (D2Game does it; point `FOG_GetSavePath` at app storage).
 5. **HUD** — skill bar and the rest of the control panel; full belt, item tooltips.

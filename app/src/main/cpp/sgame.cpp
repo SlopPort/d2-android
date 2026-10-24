@@ -356,10 +356,10 @@ void sgame_inventory(std::vector<InvItem>& out, int nNpcGuid) {
 
 // The hero's inventory panel in 800x600 from inventory.txt: panel rect (4), grid {cols, rows, left,
 // right, top, bottom, box w, box h} (8), then per body component {left, right, top, bottom, w, h} (10 x 6).
-bool sgame_inventory_layout(int* out) {
+bool sgame_inventory_layout(int* out, int nNpcGuid) {
 	bool ok = false;
 	withGame([&](D2GameStrc* pGame) {
-		D2UnitStrc* u = player(pGame);
+		D2UnitStrc* u = nNpcGuid >= 0 ? SUNIT_GetServerUnit(pGame, UNIT_MONSTER, nNpcGuid) : player(pGame);
 		if (!u) return;
 		const int id = UNITS_GetInventoryRecordId(u, INVPAGE_INVENTORY, TRUE);
 		D2InvRectStrc r = {};
@@ -494,4 +494,24 @@ void sgame_sell(int nNpcGuid, int nItemGuid, int nPrice) {
 	D2GSPacketClt33 p = {};
 	p.nHeader = 0x33; p.dwMonGUID = (uint32_t)nNpcGuid; p.dwItemGUID = (uint32_t)nItemGuid; p.dwGold = (uint32_t)nPrice;
 	loopback_send(1, kClientId, &p, sizeof p);
+}
+
+// Guid of the NPC the hero is talking to (D2Game's interact unit), or -1.
+int sgame_interact_npc() {
+	int guid = -1;
+	withGame([&](D2GameStrc* pGame) {
+		D2UnitStrc* u = player(pGame);
+		D2UnitStrc* npc = u ? SUNIT_GetInteractUnit(pGame, u) : nullptr;
+		if (npc && npc->dwUnitType == UNIT_MONSTER) guid = (int)npc->dwUnitId;
+	});
+	return guid;
+}
+
+// Whether a monster can be talked to: its monstats "interact" flag, as D2Game checks it.
+#include <MONSTER/MonsterMode.h>
+#include <D2BitManip.h>
+#include <DataTbls/MonsterTbls.h>
+bool sgame_npc_interactable(int nClassId) {
+	D2MonStatsTxt* r = MONSTERMODE_GetMonStatsTxtRecord(nClassId);
+	return r && (r->dwMonStatsFlags & gdwBitMasks[MONSTATSFLAGINDEX_INTERACT]);
 }

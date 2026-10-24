@@ -568,12 +568,12 @@ extern "C" JNIEXPORT jboolean JNICALL Java_pl_d2port_d2_D2Native_devWalkToPoint(
 // ------------------------------------------------------------------ inventory panel
 
 // {int[72] layout, String[] item graphics, int[] per item {page, body location, x, y, w, h, guid, mode}}.
-extern "C" JNIEXPORT jobjectArray JNICALL Java_pl_d2port_d2_D2Native_inventory(JNIEnv* env, jclass) {
+extern "C" JNIEXPORT jobjectArray JNICALL Java_pl_d2port_d2_D2Native_inventory(JNIEnv* env, jclass, jint npcGuid) {
 	EnvScope scope(env);
 	jint layout[72];
-	if (!sgame_inventory_layout((int*)layout)) return nullptr;
+	if (!sgame_inventory_layout((int*)layout, npcGuid)) return nullptr;
 	std::vector<InvItem> items;
-	sgame_inventory(items);
+	sgame_inventory(items, npcGuid);
 	jobjectArray out = env->NewObjectArray(3, env->FindClass("java/lang/Object"), nullptr);
 	jintArray l = env->NewIntArray(72);
 	env->SetIntArrayRegion(l, 0, 72, layout);
@@ -592,3 +592,14 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_pl_d2port_d2_D2Native_inventory(J
 }
 
 extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_itemCommand(JNIEnv* env, jclass, jint cmd, jint guid, jint a, jint b, jint c) { EnvScope scope(env); sgame_item_command(cmd, guid, a, b, c); }
+
+// ------------------------------------------------------------------ NPCs and vendors
+
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_npcAction(JNIEnv* env, jclass, jint action, jint npc, jint item) { EnvScope scope(env); sgame_npc_action(action, npc, item); }
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_npcClose(JNIEnv* env, jclass, jint npc) { EnvScope scope(env); sgame_npc_close(npc); }
+extern "C" JNIEXPORT jint JNICALL Java_pl_d2port_d2_D2Native_itemPrice(JNIEnv* env, jclass, jint npc, jint item, jint type) { EnvScope scope(env); return sgame_item_price(npc, item, type); }
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_buy(JNIEnv* env, jclass, jint npc, jint item, jint cost) { EnvScope scope(env); sgame_buy(npc, item, 0, cost); }
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_sell(JNIEnv* env, jclass, jint npc, jint item, jint price) { EnvScope scope(env); sgame_sell(npc, item, price); }
+extern "C" JNIEXPORT jint JNICALL Java_pl_d2port_d2_D2Native_interactingWith(JNIEnv* env, jclass) { EnvScope scope(env); return sgame_interact_npc(); }
+
+extern "C" JNIEXPORT jboolean JNICALL Java_pl_d2port_d2_D2Native_npcInteractable(JNIEnv* env, jclass, jint cls) { EnvScope scope(env); return sgame_npc_interactable(cls); }

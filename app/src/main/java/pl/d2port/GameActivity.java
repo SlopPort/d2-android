@@ -39,7 +39,10 @@ public final class GameActivity extends Activity {
     private LevelView view;
     private TextView status;
     private Stick stick;
-    private volatile boolean attackHeld, pickRequested, inventoryOpen;
+    private volatile boolean attackHeld, pickRequested, inventoryOpen, talkRequested, closeTrade;
+    /** NPC the hero is walking to or talking with (-1 none), and whether the click (0x13) was sent. */
+    private int talkNpc = -1;
+    private boolean talkClicked;
     private InventoryView inventory;
     private BeltView belt;
     private boolean deadShown;
@@ -72,8 +75,10 @@ public final class GameActivity extends Activity {
         Button hunt = new Button(this); hunt.setAllCaps(false); hunt.setText("→ potwór (dev)");
         hunt.setOnClickListener(v -> devWalkMonster = !devWalkMonster);
         Button invButton = new Button(this); invButton.setAllCaps(false); invButton.setText("Ekwipunek");
-        invButton.setOnClickListener(v -> { inventoryOpen = !inventoryOpen; inventory.setVisibility(inventoryOpen ? View.VISIBLE : View.GONE); });
-        bar.addView(runButton); bar.addView(walk); bar.addView(hunt); bar.addView(invButton); bar.addView(status);
+        invButton.setOnClickListener(v -> { inventoryOpen = !inventoryOpen; inventory.setVisibility(inventoryOpen ? View.VISIBLE : View.GONE); if (!inventoryOpen) closeTrade = true; });
+        Button talk = new Button(this); talk.setAllCaps(false); talk.setText("Rozmowa");
+        talk.setOnClickListener(v -> talkRequested = true);
+        bar.addView(runButton); bar.addView(walk); bar.addView(hunt); bar.addView(invButton); bar.addView(talk); bar.addView(status);
         root.addView(bar);
         // Attack, gamepad style: held, it keeps hitting the nearest monster in reach.
         Button attack = new Button(this); attack.setAllCaps(false); attack.setText("Atak");
@@ -171,6 +176,12 @@ public final class GameActivity extends Activity {
                 if (attackHeld) { attackHeld = false; deadShown = false; D2Native.serverResurrect(); }
             } else
             if (attackHeld && frame % 5 == 0) attackNearest(5);
+            if (talkRequested) { talkRequested = false; startTalk(); }
+            if (talkNpc >= 0 && frame % 5 == 0) talkStep();
+            if (closeTrade) {
+                closeTrade = false;
+                if (inventory.vendor >= 0) { D2Native.npcClose(inventory.vendor); inventory.vendor = -1; }
+            }
             if (pickRequested) { pickRequested = false; pickNearest(20); }
             D2Native.serverTick();
             int[] s = D2Native.serverPlayer();
@@ -220,6 +231,41 @@ public final class GameActivity extends Activity {
         }
         distOut[0] = bestD;
         return best;
+    }
+
+    /** Picks the nearest monster that can be talked to within 40 subtiles to walk to and talk with. */
+    private void startTalk() {
+        int[] s = D2Native.serverPlayer(), u = D2Native.serverUnits();
+        int best = -1, bestD = 41;
+        for (int i = 0; i + 12 < u.length; i += 13) {
+            if (u[i] != 1 || !D2Native.npcInteractable(u[i + 1])) continue;
+            int d = Math.abs(u[i + 3] - s[0]) + Math.abs(u[i + 4] - s[1]);
+            if (d < bestD) { bestD = d; best = u[i + 2]; }
+        }
+        talkNpc = best;
+        talkClicked = false;
+    }
+
+    /**
+     * Walk next to the NPC, then click it (0x13; D2Game starts a talk only from close by, the client
+     * walks first). Once D2Game reports the talk, ask to trade (0x38, action 1) and show the store.
+     */
+    private void talkStep() {
+        int[] s = D2Native.serverPlayer(), u = D2Native.serverUnits();
+        int x = 0, y = 0; boolean found = false;
+        for (int i = 0; i + 12 < u.length; i += 13) if (u[i] == 1 && u[i + 2] == talkNpc) { x = u[i + 3]; y = u[i + 4]; found = true; }
+        if (!found) { talkNpc = -1; return; }
+        if (D2Native.interactingWith() == talkNpc) {
+            inventory.vendor = talkNpc;
+            android.util.Log.i("D2Native", "talking with npc " + talkNpc);
+            D2Native.npcAction(1, talkNpc, 0);
+            talkNpc = -1;
+            inventoryOpen = true;
+            runOnUiThread(() -> inventory.setVisibility(View.VISIBLE));
+            return;
+        }
+        if (Math.abs(x - s[0]) + Math.abs(y - s[1]) > 4) { D2Native.devWalkToPoint(x, y, run); return; }
+        if (!talkClicked) { D2Native.serverInteract(1, talkNpc); talkClicked = true; }
     }
 
     /** Interacts with (picks up) the nearest item on the ground within reach subtiles. */

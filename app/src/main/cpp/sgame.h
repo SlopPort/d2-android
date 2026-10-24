@@ -50,7 +50,8 @@ struct InvItem { std::string file; int page, bodyLoc, x, y, w, h, guid, mode; };
 // The hero's items, or with nNpcGuid >= 0 that NPC's (a vendor's store after packet 0x38).
 void sgame_inventory(std::vector<InvItem>& out, int nNpcGuid = -1);
 // Inventory panel layout (800x600) from inventory.txt; out has 72 ints (see sgame.cpp).
-bool sgame_inventory_layout(int* out);
+// With nNpcGuid >= 0: that NPC's inventory record (a vendor's store, 'Monster' row).
+bool sgame_inventory_layout(int* out, int nNpcGuid = -1);
 
 // Item moves (0x17/0x18/0x19/0x1A/0x1C/0x1D), see sgame.cpp.
 void sgame_item_command(int nCommand, int nGuid, int a, int b, int c);
@@ -72,3 +73,5 @@ int sgame_item_price(int nNpcGuid, int nItemGuid, int nTransactionType);
 void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost);
 void sgame_debug_set_gold(int nGold);
 void sgame_sell(int nNpcGuid, int nItemGuid, int nPrice);
+int sgame_interact_npc();
+bool sgame_npc_interactable(int nClassId);

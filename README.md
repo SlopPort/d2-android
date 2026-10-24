@@ -32,7 +32,8 @@ Early but playable in Act I:
 - **UI:** automap minimap, life/mana globes, ground items, an inventory panel (move, equip, drop
   items), the first belt row (drink potions) and a virtual stick. The buttons are labelled in Polish.
 
-Not done yet: NPC interaction and trade, experience and levelling, saving, skill bar, sound,
+Trading with vendors works ("Rozmowa" = Talk: walk to the nearest NPC, store next to the
+inventory, tap to buy or sell). Not done yet: NPC dialogs and quests, hirelings, experience and levelling, saving, skill bar, sound,
 Acts II-V. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start
