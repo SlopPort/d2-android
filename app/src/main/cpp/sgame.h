@@ -58,3 +58,6 @@ void sgame_item_command(int nCommand, int nGuid, int a, int b, int c);
 int sgame_debug_give_item(const char* szCode);
 void sgame_debug_character(int* out);
 void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints);
+
+// Test only: when set, sgame_tick appends every server-to-client packet here.
+extern std::vector<std::vector<uint8_t>>* gPacketLog;

@@ -67,11 +67,17 @@ bool sgame_create(const char* szName, int nClass, int nDifficulty) {
 	return ok;
 }
 
+std::vector<std::vector<uint8_t>>* gPacketLog;
+
 void sgame_tick() {
 	GAME_ProcessNetworkMessages();
 	GAME_UpdateGamesProgress(0);
+	// Send the frame's packets to the client (D2Game #10005, called by the 1.10 client after each frame).
+	GAME_UpdateClients(1, 0);
 	std::vector<uint8_t> packet;
-	while (loopback_next_packet(packet)) {} // the app reads server state directly
+	while (loopback_next_packet(packet)) { // the app reads server state directly, except a few messages
+		if (gPacketLog && !packet.empty()) gPacketLog->push_back(packet);
+	}
 }
 
 bool sgame_ready() {

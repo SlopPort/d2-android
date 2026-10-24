@@ -92,6 +92,37 @@ int main(int argc, char** argv) {
 			sgame_player_state(s);
 			if (f % 10 == 0) printf("frame %d: %d,%d mode %d\n", f, s[0], s[1], s[4]);
 		}
+		if (getenv("D2TALK")) {
+			// Click Charsi (monstats 154) and list what the server sends back.
+			std::vector<std::vector<uint8_t>> log;
+			gPacketLog = &log;
+			sgame_units(units);
+			int npc = -1, nx = 0, ny = 0;
+			for (size_t i = 0; i + 12 < units.size(); i += 13) if (units[i] == 1 && units[i + 1] == 154) { npc = units[i + 2]; nx = units[i + 3]; ny = units[i + 4]; }
+			printf("Charsi guid %d at %d,%d\n", npc, nx, ny);
+			// Walk next to her first: the server ignores clicks on units more than 50 subtiles away.
+			for (int f = 0; f < 200; ++f) {
+				sgame_player_state(s);
+				if (std::abs(s[0] - nx) + std::abs(s[1] - ny) < 5) break;
+				if (f % 10 == 0) {
+					std::vector<RoutePoint> r = test_plan_route(sgame_act(), s[0], s[1], nx, ny, 90);
+					if (!r.empty()) sgame_move(r[std::min<size_t>(r.size() - 1, 12)].x, r[std::min<size_t>(r.size() - 1, 12)].y, true);
+				}
+				usleep(40000); sgame_tick();
+			}
+			log.clear();
+			sgame_player_state(s);
+			printf("hero at %d,%d before the click\n", s[0], s[1]);
+			sgame_interact(1, npc);
+			for (int f = 0; f < 150; ++f) {
+				usleep(40000); sgame_tick();
+				for (auto& p : log) { printf("frame %d: server packet 0x%02X (%zu bytes):", f, p[0], p.size()); for (size_t k = 1; k < p.size() && k < 24; ++k) printf(" %02x", p[k]); printf("\n"); }
+				log.clear();
+			}
+			sgame_player_state(s);
+			printf("hero at %d,%d mode %d after\n", s[0], s[1], s[4]);
+			gPacketLog = nullptr;
+		}
 		if (getenv("D2RESPEC")) {
 			// Token of Absolution: spend points, use the token (0x20), all points must come back.
 			auto settle = [&]() { for (int k = 0; k < 5; ++k) { usleep(40000); sgame_tick(); } };
