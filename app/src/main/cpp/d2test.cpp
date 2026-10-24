@@ -92,6 +92,22 @@ int main(int argc, char** argv) {
 			sgame_player_state(s);
 			if (f % 10 == 0) printf("frame %d: %d,%d mode %d\n", f, s[0], s[1], s[4]);
 		}
+		if (getenv("D2RESPEC")) {
+			// Token of Absolution: spend points, use the token (0x20), all points must come back.
+			auto settle = [&]() { for (int k = 0; k < 5; ++k) { usleep(40000); sgame_tick(); } };
+			auto show = [&](const char* what) {
+				int c[8]; sgame_debug_character(c);
+				printf("%s: str %d dex %d vit %d ene %d | stat pts %d skill pts %d | max life %d | skill levels %d\n", what, c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]);
+			};
+			show("start");
+			sgame_debug_spend_points(8, 126, 3); settle(); // Bash
+			show("after spending 8 stat and 3 skill points");
+			int token = sgame_debug_give_item("toa "); settle();
+			printf("token guid %d\n", token);
+			sgame_player_state(s);
+			sgame_item_command(0x20, token, s[0], s[1], 0); settle();
+			show("after the token");
+		}
 		if (getenv("D2NPC")) {
 			sgame_units(units);
 			for (size_t i = 0; i + 12 < units.size(); i += 13)

@@ -53,3 +53,8 @@ bool sgame_inventory_layout(int* out);
 
 // Item moves (0x17/0x18/0x19/0x1A/0x1C/0x1D), see sgame.cpp.
 void sgame_item_command(int nCommand, int nGuid, int a, int b, int c);
+
+// Test only (respec check): give an item by code, read the character, spend points.
+int sgame_debug_give_item(const char* szCode);
+void sgame_debug_character(int* out);
+void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints);

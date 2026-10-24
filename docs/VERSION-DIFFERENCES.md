@@ -12,6 +12,7 @@ There are three ways:
   `D2_GAME_VERSION=114D` (default in `app/src/main/cpp/CMakeLists.txt`), which defines
   `D2_VERSION_MINOR=14` and `D2_VERSION_113C`, so these parts are compiled in.
 - **To do:** game code that changed and is not in D2MOO yet, or that has not been checked.
+- **Done:** ported by us from the 1.14d `Game.exe` (addresses in the code comments).
 
 ## Gameplay
 
@@ -21,7 +22,8 @@ There are three ways:
 | 1.11 | 10 new runewords, new uniques from special bosses | Data |
 | 1.11 | Hirelings for hire 1-5 levels below the player; faster hireling XP | To do (check code) |
 | 1.11 | Fixes: Diablo's seals, "missile firing too far", set bonuses kept after death, Trang-Oul invincibility, charged skills giving synergies, ethereal stats kept by transmute | To do (check each) |
-| 1.13c | Respec: free respec from the Den of Evil (Akara), Token of Absolution | To do |
+| 1.13c | Respec with the Token of Absolution | Done, from the 1.14d binary (d2test `D2RESPEC=1`) |
+| 1.13c | Free respec from Akara after the Den of Evil | To do |
 | 1.13c | Higher high-rune drop rates, Fire Enchanted explosion damage, Oblivion Knight without Iron Maiden, Hellfire Torch proc 5%, Fangskin Hell loot | Data |
 | 1.13c | Uber minions give no experience | Switch |
 | 1.13c | Uber Mephisto checks both Uber Diablo and Uber Baal | To do (check) |

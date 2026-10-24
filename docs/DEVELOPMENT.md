@@ -24,6 +24,7 @@
 | `D2DIRS=1` | prints D2 directions for 8 vectors |
 | `D2EXIT=1` (with `D2SERVER`) | walks the hero from the camp into Blood Moor with the route helper (`route.cpp`: BFS over D2 collision of loaded rooms), hunts the nearest monsters and prints combat stats and hero life; after frame 1300 it picks up nearby loot and prints gold and inventory item count. See "Reference seed" below |
 | `D2DEATH=1` (with `D2EXIT`) | sets hero life to 1 at the first attack, waits for `PLRMODE_DEAD`, sends packet 0x41 and checks the hero is back in camp with full life |
+| `D2RESPEC=1` (with `D2SERVER`) | spends 8 stat points (packet 0x3A) and 3 levels of Bash, uses a Token of Absolution (0x20) and prints the character before and after |
 | `D2TXT=1` | compile tables from `.txt` instead of loading the game's `.bin` |
 | 3rd argument | directory with reference `.bin` files: compares our compiled tables |
 
@@ -95,3 +96,10 @@ Imperative subject of at most 72 characters with an area prefix (`game:`, `rende
 `d2moo:`, `d2test:`, `docs:`), one change per commit, and a body saying why and how it was checked
 (seed, d2test switch, device). A `d2moo:` commit also adds a row to D2MOO-CHANGES.md. Polish UI
 words get their English meaning, e.g. "Pick up (Podnieś) button".
+
+## Porting from 1.14d
+
+D2MOO covers 1.10f. For 1.13/1.14 features the 1.14d `Game.exe` is disassembled with the NDK's
+`llvm-objdump -d -M intel` and each called function is matched to its D2MOO equivalent by what it
+does (arguments, stat ids, table offsets). Item codes are a good entry point (e.g. `cmp eax,
+0x20616f74` is `'toa '`). New code carries `//1.14d: Game.0x...` comments.

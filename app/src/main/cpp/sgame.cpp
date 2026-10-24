@@ -387,9 +387,54 @@ void sgame_item_command(int nCommand, int nGuid, int a, int b, int c) {
 	case 0x17: case 0x19: put32(1, nGuid); n = 5; break;
 	case 0x18: put32(1, nGuid); put32(5, a); put32(9, b); put32(13, c); n = 17; break;
 	case 0x1A: case 0x1D: put32(1, nGuid); put32(5, a); n = 9; break;
+	case 0x20: put32(1, nGuid); put32(5, a); put32(9, b); n = 13; break; // use an inventory item at the hero's x, y
 	case 0x26: put32(1, nGuid); put32(5, a); put32(9, 0); n = 13; break; // use belt item (a: on mercenary)
 	case 0x1C: { uint16_t loc = (uint16_t)a; memcpy(p + 1, &loc, 2); n = 3; break; }
 	default: return;
 	}
 	loopback_send(1, kClientId, p, n);
+}
+
+#include <D2Skills.h>
+#include <QUESTS/Quests.h>
+#include <PLAYER/PlayerStats.h>
+#include <SKILLS/Skills.h>
+
+// Test only: give the hero an item by its 4-letter code ("toa " etc.); returns its guid or -1.
+int sgame_debug_give_item(const char* szCode) {
+	int guid = -1;
+	withGame([&](D2GameStrc* pGame) {
+		D2UnitStrc* u = player(pGame);
+		if (!u) return;
+		uint32_t code = 0;
+		memcpy(&code, szCode, 4);
+		if (D2UnitStrc* pItem = QUESTS_CreateItem(pGame, u, code, 1, ITEMQUAL_NORMAL, 1)) guid = (int)pItem->dwUnitId;
+	});
+	return guid;
+}
+
+// Test only: {str, dex, vit, energy, unspent stat points, unspent skill points, max life, sum of skill levels}.
+void sgame_debug_character(int* out) {
+	for (int i = 0; i < 8; ++i) out[i] = -1;
+	withGame([&](D2GameStrc* pGame) {
+		D2UnitStrc* u = player(pGame);
+		if (!u) return;
+		const int ids[] = {STAT_STRENGTH, STAT_DEXTERITY, STAT_VITALITY, STAT_ENERGY, STAT_STATPTS, STAT_SKILLPTS};
+		for (int i = 0; i < 6; ++i) out[i] = STATLIST_GetUnitBaseStat(u, ids[i], 0);
+		out[6] = STATLIST_GetUnitBaseStat(u, STAT_MAXHP, 0) >> 8;
+		out[7] = 0;
+		for (D2SkillStrc* k = u->pSkills ? SKILLS_GetFirstSkillFromSkillList(u->pSkills) : nullptr; k; k = SKILLS_GetNextSkill(k)) out[7] += SKILLS_GetSkillLevel(u, k, 0);
+	});
+}
+
+// Test only: give unspent points and spend them as the client would (packets 0x3A / 0x3B).
+void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints) {
+	withGame([&](D2GameStrc* pGame) {
+		D2UnitStrc* u = player(pGame);
+		if (!u) return;
+		STATLIST_AddUnitStat(u, STAT_STATPTS, nStatPoints, 0);
+		// Skill levels are set directly (as if bought with points); packet 0x3B is rejected here, see ROADMAP.
+		if (nSkillPoints > 0) D2GAME_SetSkills_6FD14C60(u, nSkillId, nSkillPoints, 0);
+	});
+	for (int i = 0; i < nStatPoints; ++i) { uint8_t p[3] = {0x3A, (uint8_t)(i % 4 == 0 ? 0 : i % 4 == 1 ? 2 : i % 4 == 2 ? 3 : 1), 0}; loopback_send(1, kClientId, p, 3); }
 }

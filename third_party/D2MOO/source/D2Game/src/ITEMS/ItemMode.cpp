@@ -29,6 +29,7 @@
 #include "ITEMS/ItemsMagic.h"
 #include "PLAYER/Player.h"
 #include "PLAYER/PlayerPets.h"
+#include "PLAYER/PlayerStats.h"
 #include "PLAYER/PlrTrade.h"
 #include "QUESTS/Quests.h"
 #include "QUESTS/ACT5/A5Q3.h"
@@ -3971,6 +3972,34 @@ int32_t __fastcall sub_6FC47D30(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nI
                         return 1;
                     }
                 }
+#if D2_VERSION_MAJOR >= 1 && D2_VERSION_MINOR >= 13
+                // Token of Absolution (1.13c), from 1.14d Game.0x55E52A: reset skills and stats,
+                // with no quest condition; the token is used up.
+                else if (dwItemCode == ' aot')
+                {
+                    if (pUnit->pInventory)
+                    {
+                        for (D2UnitStrc* i = INVENTORY_GetFirstItem(pUnit->pInventory); i; i = INVENTORY_GetNextItem(i))
+                        {
+                            if (INVENTORY_UnitIsItem(i) && ITEMS_CheckItemFlag(i, IFLAG_TARGETING, __LINE__, __FILE__))
+                            {
+                                ITEMS_SetItemFlag(i, IFLAG_TARGETING, 0);
+                                if (pUnit->dwUnitType == UNIT_PLAYER)
+                                {
+                                    D2GAME_PACKETS_SendPacket0x3F_6FC3EDC0(SUNIT_GetClientFromPlayer(pUnit, __FILE__, __LINE__), i, -1, 1, 0, -1);
+                                }
+                            }
+                        }
+                    }
+
+                    PLAYERSTATS_ResetSkills(pGame, pUnit);
+                    PLAYERSTATS_ResetStats(pGame, pUnit);
+                    D2GAME_UpdateClientItem_6FC3E9D0(SUNIT_GetClientFromPlayer(pUnit, __FILE__, __LINE__), pUnit, pItem, 0x20);
+                    D2GAME_RemoveItem_6FC471F0(pGame, pUnit, pItem, 0);
+                    SUNIT_AttachSound(pUnit, 2, pUnit);
+                    return 1;
+                }
+#endif
 
                 SUNIT_AttachSound(pUnit, 19, pUnit);
             }

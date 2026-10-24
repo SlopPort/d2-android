@@ -197,3 +197,150 @@ int32_t __fastcall PLAYERSTATS_SpendStatPoint(D2UnitStrc* pUnit, int32_t nStatId
 		return 0;
     }
 }
+
+#if D2_VERSION_MAJOR >= 1 && D2_VERSION_MINOR >= 13
+// Respecialization (added in 1.13c). D2MOO does not have it; implemented from the 1.14d binary.
+#include <D2Skills.h>
+#include "SKILLS/Skills.h"
+
+//1.14d: Game.0x570A80 (energy part of the stat reset, nDifference is base - current)
+static void PLAYERSTATS_ResetEnergy(D2UnitStrc* pUnit, int32_t nDifference)
+{
+    if (!nDifference || !pUnit)
+    {
+        return;
+    }
+
+    D2CharStatsTxt* pCharStatsTxtRecord = PLRSAVE2_GetCharStatsTxtRecord(pUnit->dwClassId);
+    if (!pCharStatsTxtRecord)
+    {
+        return;
+    }
+
+    STATLIST_AddUnitStat(pUnit, STAT_STATPTS, -nDifference, 0);
+    STATLIST_AddUnitStat(pUnit, STAT_ENERGY, nDifference, 0);
+    if (nDifference > 0)
+    {
+        STATLIST_AddUnitStat(pUnit, STAT_MANA, (pCharStatsTxtRecord->nManaPerMagic * nDifference) << 6, 0);
+    }
+    STATLIST_AddUnitStat(pUnit, STAT_MAXMANA, (pCharStatsTxtRecord->nManaPerMagic * nDifference) << 6, 0);
+
+    const int32_t nMaxMana = STATLIST_UnitGetStatValue(pUnit, STAT_MAXMANA, 0);
+    if (STATLIST_UnitGetStatValue(pUnit, STAT_MANA, 0) > nMaxMana)
+    {
+        STATLIST_SetUnitStat(pUnit, STAT_MANA, nMaxMana, 0);
+    }
+}
+
+//1.14d: Game.0x570B60 (vitality part of the stat reset)
+static void PLAYERSTATS_ResetVitality(D2UnitStrc* pUnit, int32_t nDifference)
+{
+    if (!nDifference || !pUnit)
+    {
+        return;
+    }
+
+    D2CharStatsTxt* pCharStatsTxtRecord = PLRSAVE2_GetCharStatsTxtRecord(pUnit->dwClassId);
+    if (!pCharStatsTxtRecord)
+    {
+        return;
+    }
+
+    STATLIST_AddUnitStat(pUnit, STAT_STATPTS, -nDifference, 0);
+    STATLIST_AddUnitStat(pUnit, STAT_VITALITY, nDifference, 0);
+
+    STATLIST_AddUnitStat(pUnit, STAT_MAXHP, (pCharStatsTxtRecord->nLifePerVitality * nDifference) << 6, 0);
+    if (nDifference > 0)
+    {
+        STATLIST_AddUnitStat(pUnit, STAT_HITPOINTS, (pCharStatsTxtRecord->nLifePerVitality * nDifference) << 6, 0);
+    }
+    const int32_t nMaxHp = STATLIST_UnitGetStatValue(pUnit, STAT_MAXHP, 0);
+    if (STATLIST_UnitGetStatValue(pUnit, STAT_HITPOINTS, 0) > nMaxHp)
+    {
+        STATLIST_SetUnitStat(pUnit, STAT_HITPOINTS, nMaxHp, 0);
+    }
+
+    STATLIST_AddUnitStat(pUnit, STAT_MAXSTAMINA, (pCharStatsTxtRecord->nStaminaPerVitality * nDifference) << 6, 0);
+    if (nDifference > 0)
+    {
+        STATLIST_AddUnitStat(pUnit, STAT_STAMINA, (pCharStatsTxtRecord->nStaminaPerVitality * nDifference) << 6, 0);
+    }
+    const int32_t nMaxStamina = STATLIST_UnitGetStatValue(pUnit, STAT_MAXSTAMINA, 0);
+    if (STATLIST_UnitGetStatValue(pUnit, STAT_STAMINA, 0) > nMaxStamina)
+    {
+        STATLIST_SetUnitStat(pUnit, STAT_STAMINA, nMaxStamina, 0);
+    }
+}
+
+//1.14d: Game.0x570C80
+// Sets strength, energy, dexterity and vitality back to the class's starting values and returns
+// the difference as unspent stat points.
+void __fastcall PLAYERSTATS_ResetStats(D2GameStrc* pGame, D2UnitStrc* pUnit)
+{
+    if (!pUnit || pUnit->dwUnitType != UNIT_PLAYER)
+    {
+        return;
+    }
+
+    D2CharStatsTxt* pCharStatsTxtRecord = PLRSAVE2_GetCharStatsTxtRecord(pUnit->dwClassId);
+    if (!pCharStatsTxtRecord)
+    {
+        return;
+    }
+
+    int32_t nDifference = pCharStatsTxtRecord->nStr - STATLIST_GetUnitBaseStat(pUnit, STAT_STRENGTH, 0);
+    if (nDifference)
+    {
+        STATLIST_AddUnitStat(pUnit, STAT_STATPTS, -nDifference, 0);
+        STATLIST_AddUnitStat(pUnit, STAT_STRENGTH, nDifference, 0);
+        UNITROOM_RefreshUnit(pUnit);
+    }
+
+    PLAYERSTATS_ResetEnergy(pUnit, pCharStatsTxtRecord->nInt - STATLIST_GetUnitBaseStat(pUnit, STAT_ENERGY, 0));
+
+    nDifference = pCharStatsTxtRecord->nDex - STATLIST_GetUnitBaseStat(pUnit, STAT_DEXTERITY, 0);
+    if (nDifference)
+    {
+        STATLIST_AddUnitStat(pUnit, STAT_STATPTS, -nDifference, 0);
+        STATLIST_AddUnitStat(pUnit, STAT_DEXTERITY, nDifference, 0);
+        UNITROOM_RefreshUnit(pUnit);
+    }
+
+    PLAYERSTATS_ResetVitality(pUnit, pCharStatsTxtRecord->nVit - STATLIST_GetUnitBaseStat(pUnit, STAT_VITALITY, 0));
+}
+
+//1.14d: Game.0x570360
+// Removes every class skill and returns the points spent on them as unspent skill points.
+void __fastcall PLAYERSTATS_ResetSkills(D2GameStrc* pGame, D2UnitStrc* pUnit)
+{
+    if (!pUnit || pUnit->dwUnitType != UNIT_PLAYER)
+    {
+        return;
+    }
+
+    const int32_t nClass = pUnit->dwClassId;
+    if (nClass < 0 || nClass >= NUMBER_OF_PLAYERCLASSES)
+    {
+        return;
+    }
+
+    int32_t nPoints = 0;
+    const int32_t nCount = sgptDataTables->nClassSkillCount[nClass];
+    for (int32_t i = 0; i < nCount; ++i)
+    {
+        const int32_t nSkillId = sgptDataTables->nClassSkillList[nClass * sgptDataTables->nHighestClassSkillCount + i];
+        D2SkillStrc* pSkill = SKILLS_GetSkillById(pUnit, nSkillId, -1);
+        if (pSkill)
+        {
+            nPoints += SKILLS_GetSkillLevel(pUnit, pSkill, 0);
+            D2GAME_SetSkills_6FD14C60(pUnit, nSkillId, 0, 1);
+            D2GAME_PACKETS_SendPacket0x21_UpdateSkills_6FC3DB50(SUNIT_GetClientFromPlayer(pUnit, __FILE__, __LINE__), pUnit, nSkillId, 0, 1);
+        }
+    }
+
+    STATLIST_AddUnitStat(pUnit, STAT_SKILLPTS, nPoints, 0);
+    D2GAME_UpdatePlayerVitals_6FC4B240(pGame, pUnit);
+    D2GAME_ITEMS_UpdateInventoryItems_6FC44A90(pGame, pUnit, 0);
+    UNITS_RefreshInventory(pUnit, TRUE);
+}
+#endif
