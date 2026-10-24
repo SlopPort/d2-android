@@ -816,7 +816,9 @@ BOOL __stdcall D2Common_10232(D2DynamicPathStrc* pPath, D2UnitStrc* pUnit, D2Act
 	{
 		pPath->dwFlags |= PATH_UNKNOWN_FLAG_0x00001;
 	}
-#ifdef D2_VERSION_113C
+#if defined(D2_VERSION_113C) && !defined(__ANDROID__)
+	// UNVERIFIED on Android: D2MOO has no 4-argument PATH_RecacheRoomIfNeeded (1.13c), so the
+	// 1.14d build keeps the 1.10f behaviour of this step.
 	PATH_RecacheRoomIfNeeded(pPath, PATH_ToFP16Center(nTargetX), PATH_ToFP16Center(nTargetY), pDestRoom);
 #endif
 	D2_ASSERT(COLLISION_GetRoomBySubTileCoordinates(pDestRoom, nTargetX, nTargetY));

@@ -24,6 +24,15 @@ target_include_directories(d2native PRIVATE compat
   ${D2MOO}/D2Common/include ${D2MOO}/D2CommonDefinitions/include ${D2MOO}/Fog/include
   ${D2MOO}/Storm/include ${D2MOO}/D2Lang/include ${D2MOO}/D2CMP/include ${D2MOO}/D2Hell/include)
 target_compile_definitions(d2native PRIVATE WHOA_SYSTEM_LINUX=1 D2GAME_DLL_DECL= D2NET_DLL_DECL= D2COMMON_DLL_DECL= FOG_DLL_DECL= STORM_DLL_DECL= D2CMP_DLL_DECL= D2LANG_DLL_DECL= D2HELL_DLL_DECL=)
+# Game version D2MOO is compiled for. D2MOO reproduces 1.10f and has switches for later behaviour
+# (1.11 Uber Tristram, 1.13c changes); the target is 1.14d, which contains them. "110F" builds 1.10f.
+set(D2_GAME_VERSION "114D" CACHE STRING "Diablo II version to build: 114D or 110F")
+if(D2_GAME_VERSION STREQUAL "114D")
+  set(D2_VERSION_DEFS D2_VERSION_MAJOR=1 D2_VERSION_MINOR=14 D2_VERSION_PATCH='D' D2_VERSION_114D D2_VERSION_113C)
+else()
+  set(D2_VERSION_DEFS)
+endif()
+target_compile_definitions(d2native PRIVATE ${D2_VERSION_DEFS})
 target_compile_options(d2native PRIVATE -fms-extensions -Wno-everything -fno-strict-aliasing -fshort-wchar)
 target_link_options(d2native PRIVATE -Wl,--no-undefined -Wl,--error-limit=0)
 target_link_libraries(d2native log)
@@ -33,6 +42,7 @@ if(D2NATIVE_TESTS)
   add_executable(d2test d2test.cpp)
   target_include_directories(d2test PRIVATE compat ${D2MOO}/D2Game/include ${D2MOO}/D2Net/include ${D2MOO}/../external/squall ${D2MOO}/D2Common/include ${D2MOO}/D2CommonDefinitions/include ${D2MOO}/Fog/include ${D2MOO}/Storm/include ${D2MOO}/D2Lang/include ${D2MOO}/D2CMP/include ${D2MOO}/D2Hell/include)
   target_compile_definitions(d2test PRIVATE WHOA_SYSTEM_LINUX=1 D2GAME_DLL_DECL= D2NET_DLL_DECL= D2COMMON_DLL_DECL= FOG_DLL_DECL= STORM_DLL_DECL= D2CMP_DLL_DECL= D2LANG_DLL_DECL= D2HELL_DLL_DECL=)
+  target_compile_definitions(d2test PRIVATE ${D2_VERSION_DEFS})
   target_compile_options(d2test PRIVATE -fms-extensions -Wno-everything -fshort-wchar)
   target_link_libraries(d2test d2native)
 endif()
