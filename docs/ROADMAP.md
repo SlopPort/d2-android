@@ -18,22 +18,30 @@ Target: vanilla Diablo II: Lord of Destruction 1.14d. Mod support comes after th
   0x13. In the inventory panel a tap takes an item to the cursor (0x19, 0x1C) and a second tap
   places it (0x18), equips or swaps it (0x1A, 0x1D) or drops it outside the panel (0x17). The
   belt's first row is shown at the bottom; a tap drinks the potion (0x26).
+- **Vendors:** "Rozmowa" (Talk) walks to the nearest NPC with the monstats interact flag and
+  clicks it (0x13; the server only starts a talk within 9 subtiles); the trade action (0x38)
+  shows the store (`buysell.dc6`, `inventory.txt` 'Monster' row) next to the inventory. A tap on
+  a store item buys it (0x32, D2MOO's stub implemented from decompilation), on an own item sells
+  it (0x33), on the top of the store turns the page; closing the panel ends the talk (0x30).
+- **Respec:** Token of Absolution from the 1.14d binary (d2test `D2RESPEC=1`).
 - **Death:** hero death and revival in town with packet 0x41 (d2test with `D2DEATH=1`).
-- **HUD:** life/mana globes from `hlthmana.dc6`; inventory panel ("Ekwipunek") with the layout
+- **HUD:** life/mana globes from `hlthmana.dc6`; inventory panel ("Ekwipunek", Inventory) with the layout
   from `inventory.txt` (800x600 rows), the panel from `invchar6.dc6` frames 4-7, items from their
   invfile DC6 at grid cells or centred in body boxes.
 - **Automap minimap:** cells from D2Common (`DATATBLS_GetAutomapCellId`) for rooms the hero has
   been near, drawn with `maximap.dc6` frames; revealed rooms are remembered.
 - **Developer helpers:** route helper `route.cpp` and the "→ poziom 2 (dev)" / "→ potwór (dev)"
-  buttons (walk to the next level, to the nearest hostile monster, or explore).
+  buttons ("to level 2", "to monster": walk to the next level, to the nearest hostile monster, or explore).
 
 ## Next
 
 1. **1.10f → 1.14d.** Catalogued in [VERSION-DIFFERENCES](VERSION-DIFFERENCES.md); the build
-   already uses D2MOO's 1.14d switches. Next: check and port the "To do" rows (respec, hirelings,
-   aura and skill fixes), then test the Uber Tristram event.
-2. **NPCs** — trade works (talk 0x13, store 0x38, buy 0x32 from decompiled D2MOO code, sell 0x33; "Rozmowa" button walks to the nearest NPC). Next: dialogue menu and texts, gambling, repair, hirelings, quests (Den of Evil first, then Akara's respec).
-3. **Character progression** — experience and levels, stat and skill points.
+   already uses D2MOO's 1.14d switches. Next: check and port the "To do" rows (hirelings, aura and
+   skill fixes), then test the Uber Tristram event.
+2. **NPCs** — dialogue menu and texts, gambling, repair, hirelings, quests (Den of Evil first,
+   then Akara's respec, see VERSION-DIFFERENCES).
+3. **Character progression** — experience and levels; UI for stat and skill points (the server
+   side already works, d2test `D2RESPEC=1` spends them).
 4. **Saving** — `.d2s` writing (D2Game does it; point `FOG_GetSavePath` at app storage).
 5. **HUD** — skill bar and the rest of the control panel; full belt, item tooltips.
 6. **Combat** — other skills and attack packets (0x05-0x11), hit recovery visuals, missiles.

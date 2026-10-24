@@ -48,8 +48,9 @@ from D2MOO's struct, the `.txt` is compiled instead.
    (`D2Game_10046`, `GAME_InitGameDataTable`), then sends system messages as client 1:
    0x66 new game (single player, expansion) and 0x6A join act. D2Game creates the game, the act
    (DRLG) and the hero. A new hero (no `.d2s` save) is created from its class template.
-3. Every 40 ms the native thread calls `serverTick` (`GAME_ProcessNetworkMessages` +
-   `GAME_UpdateGamesProgress`). The server sets the client "in game" in its own frame; commands
+3. Every 40 ms the native thread calls `serverTick` (`GAME_ProcessNetworkMessages`,
+   `GAME_UpdateGamesProgress`, then `GAME_UpdateClients`, D2Game #10005, which the 1.10 client
+   called after each frame; without it the queued server->client packets are never sent). The server sets the client "in game" in its own frame; commands
    are only sent after that (earlier ones count as cheating in D2Game).
 4. Movement: the stick produces a target subtile; `serverMove` sends packet 0x01 (walk) or 0x03
    (run) every 5 frames.
@@ -62,8 +63,9 @@ The automap (`Automap.java`) takes cells from `automapCells`: for tiles of rooms
 active, D2Common's `DATATBLS_GetAutomapCellId` picks the frame of `data/global/ui/automap/maximap.dc6`
 (1/5 of the world scale: a 160x80 tile is a 32x16 cell).
 
-Packets from server to client are collected (`loopback_next_packet`) but not used yet; a future
-client side (sounds, overhead messages, item updates) can read them.
+Packets from server to client are drained every tick (`loopback_next_packet`); the app does not
+use them yet (d2test logs them, e.g. to check 0x27 NPC interaction). A future client side
+(sounds, overhead messages, item updates) can read them.
 
 ## Coordinates
 

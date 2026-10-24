@@ -81,9 +81,9 @@ The app takes the same seed from an intent extra:
 adb -s <device> shell am start -n pl.d2port/.GameActivity --ei seed 777
 ```
 
-Then "Bieg" (run), "→ poziom 2 (dev)" and "→ potwór (dev)" take the hero to the Fallen packs and
+Then "Bieg" (Run), "→ poziom 2 (dev)" (to level 2) and "→ potwór (dev)" (to monster) take the hero to the Fallen packs and
 kill them (the helper attacks within 4 subtiles, skips monsters it gets stuck walking to, and
-explores otherwise). "Atak" (bottom right), held, attacks the nearest monster within 5 subtiles.
+explores otherwise). "Atak" (Attack, bottom right), held, attacks the nearest monster within 5 subtiles.
 
 ## Asserts
 

@@ -31,10 +31,12 @@ Early but playable in Act I:
   depth order, with client-side walk/idle animation of monsters and objects.
 - **UI:** automap minimap, life/mana globes, ground items, an inventory panel (move, equip, drop
   items), the first belt row (drink potions) and a virtual stick. The buttons are labelled in Polish.
+- **Vendors:** the "Rozmowa" (Talk) button walks to the nearest NPC and talks to her (0x13); the
+  store opens next to the inventory (0x38), a tap buys (0x32) or sells (0x33).
+- **1.13c respec:** the Token of Absolution works (ported from the 1.14d binary).
 
-Trading with vendors works ("Rozmowa" = Talk: walk to the nearest NPC, store next to the
-inventory, tap to buy or sell). Not done yet: NPC dialogs and quests, hirelings, experience and levelling, saving, skill bar, sound,
-Acts II-V. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Not done yet: NPC dialogue and quests, hirelings, experience and levelling, saving, skill bar,
+sound, Acts II-V. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start
 
@@ -51,6 +53,7 @@ Acts II-V. See [docs/ROADMAP.md](docs/ROADMAP.md).
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Test loop on a phone, debugging native crashes, conventions, pitfalls |
 | [docs/D2MOO-CHANGES.md](docs/D2MOO-CHANGES.md) | Every change made to D2MOO and squall, and why |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Done, next steps, known issues and unverified parts |
+| [docs/VERSION-DIFFERENCES.md](docs/VERSION-DIFFERENCES.md) | Every 1.10f to 1.14d change and how it reaches the port |
 
 ## Licence
 
