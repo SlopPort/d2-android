@@ -433,8 +433,9 @@ void sgame_debug_spend_points(int nStatPoints, int nSkillId, int nSkillPoints) {
 		D2UnitStrc* u = player(pGame);
 		if (!u) return;
 		STATLIST_AddUnitStat(u, STAT_STATPTS, nStatPoints, 0);
-		// Skill levels are set directly (as if bought with points); packet 0x3B is rejected here, see ROADMAP.
+		// Skill levels are set directly: a level 1 hero may only learn level 1 of a skill with 0x3B.
 		if (nSkillPoints > 0) D2GAME_SetSkills_6FD14C60(u, nSkillId, nSkillPoints, 0);
 	});
 	for (int i = 0; i < nStatPoints; ++i) { uint8_t p[3] = {0x3A, (uint8_t)(i % 4 == 0 ? 0 : i % 4 == 1 ? 2 : i % 4 == 2 ? 3 : 1), 0}; loopback_send(1, kClientId, p, 3); }
 }
+

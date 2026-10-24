@@ -4,7 +4,7 @@ D2MOO reconstructs version 1.10f. The target is the last official patch, 1.14d. 
 what changed between them (from the patch notes shipped with the game, `Patch.txt`) and how each
 change reaches the port.
 
-There are three ways:
+There are four ways:
 
 - **Data:** the change is in the 1.14d table files (`.txt`/`.bin` in `patch_d2.mpq` and the game
   archives). It arrives with the user's 1.14d data; no code needed.
