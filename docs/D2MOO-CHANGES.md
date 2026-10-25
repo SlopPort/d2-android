@@ -41,7 +41,7 @@ worker threads) and the `DllMain.cpp` files are excluded in `app/src/main/cpp/CM
 ## Upstream
 
 Fixes sent to ThePhrozenKeep/D2MOO: #309 (inactive item use-after-free), #310 (object region index)
-and #311 (party control assert) are merged; #312 (vendor buying) is in review.
+and #311 (party control assert) are merged; #312 (vendor buying) and #315 (monster spawning) are in review.
 
 Game-logic stubs left in upstream D2MOO (master 2f912ff, 2026-10-25): functions whose body is only a
 `return` above commented-out decompilation, found with a scan of all `.cpp` files.
