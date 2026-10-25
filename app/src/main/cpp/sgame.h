@@ -75,3 +75,6 @@ void sgame_debug_set_gold(int nGold);
 void sgame_sell(int nNpcGuid, int nItemGuid, int nPrice);
 int sgame_interact_npc();
 bool sgame_npc_interactable(int nClassId);
+
+// Write the hero's .d2s now (GAME_TriggerClientSave). A new game with the same name loads it.
+void sgame_save();

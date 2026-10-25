@@ -8,6 +8,7 @@
 #include <GAME/Game.h>
 #include <GAME/Clients.h>
 #include <GAME/CCmd.h>
+#include <PLAYER/PlrSave.h>
 #include <D2Dungeon.h>
 #include <Path/Path.h>
 #include <Units/Units.h>
@@ -44,6 +45,8 @@ D2UnitStrc* player(D2GameStrc* pGame) {
 
 bool sgame_create(const char* szName, int nClass, int nDifficulty) {
 	loopback_start();
+	// Single player writes and reads <save dir>/<name>.d2s itself (D2Game #10036).
+	D2GAME_10036_PLRSAVE_EnableSaveFileWriting(1);
 	D2GSPacketClt66 p = {};
 	p.nHeader = D2CLTSYS_NEWGAME;
 	strncpy(p.szGameName, "android", sizeof p.szGameName - 1);
@@ -514,4 +517,11 @@ int sgame_interact_npc() {
 bool sgame_npc_interactable(int nClassId) {
 	D2MonStatsTxt* r = MONSTERMODE_GetMonStatsTxtRecord(nClassId);
 	return r && (r->dwMonStatsFlags & gdwBitMasks[MONSTATSFLAGINDEX_INTERACT]);
+}
+
+// Save the hero now, as D2Game does on leaving the game: <save dir>/<name>.d2s.
+void sgame_save() {
+	withGame([&](D2GameStrc* pGame) {
+		GAME_TriggerClientSave(CLIENTS_GetClientFromClientId(pGame, kClientId), pGame);
+	});
 }

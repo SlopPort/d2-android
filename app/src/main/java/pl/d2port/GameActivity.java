@@ -112,6 +112,9 @@ public final class GameActivity extends Activity {
             // A new single-player game run by D2Game, as the original client created one.
             // Developer runs can fix the seed: adb shell am start -n pl.d2port/.GameActivity --ei seed 777
             D2Native.setGameSeed(getIntent().getIntExtra("seed", -1));
+            File saves = new File(getFilesDir(), "save");
+            if (!saves.isDirectory() && !saves.mkdirs()) throw new java.io.IOException("Brak katalogu zapisów");
+            D2Native.setSaveDir(saves.getAbsolutePath() + "/");
             act = D2Native.startGame(4, 0);
             if (act == 0) throw new java.io.IOException("D2Game nie utworzył gry (logcat D2Native)");
             automap.load();
@@ -366,6 +369,12 @@ public final class GameActivity extends Activity {
         Looks.Anim a = looks.get(D2Native.unitLook(type, guid), dir64);
         if (a == null || a.frames == null || a.frames.length == 0) return null;
         return new LevelView.Sprite(x, y, a.frames[Math.max(0, Math.min(a.frames.length - 1, frame))], a.offX, a.offY);
+    }
+
+    /** Leaving the app saves the hero, as leaving a game does in Diablo II. */
+    @Override protected void onPause() {
+        super.onPause();
+        nativeThread.execute(() -> { if (act != 0) D2Native.serverSave(); });
     }
 
     @Override protected void onDestroy() {

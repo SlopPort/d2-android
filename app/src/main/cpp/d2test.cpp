@@ -92,6 +92,27 @@ int main(int argc, char** argv) {
 			sgame_player_state(s);
 			if (f % 10 == 0) printf("frame %d: %d,%d mode %d\n", f, s[0], s[1], s[4]);
 		}
+		if (getenv("D2SAVE") || getenv("D2LOAD")) {
+			// D2SAVE: change the character and save it; D2LOAD (a later run): the same values must come back.
+			auto settle = [&]() { for (int k = 0; k < 5; ++k) { usleep(40000); sgame_tick(); } };
+			auto show = [&](const char* what) {
+				int c[8]; sgame_debug_character(c);
+				int g[2]; sgame_player_goods(g);
+				printf("%s: str %d dex %d vit %d ene %d | stat pts %d skill pts %d | max life %d | skill levels %d | gold %d items %d\n", what, c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], g[0], g[1]);
+			};
+			if (getenv("D2SAVE")) {
+				show("new character");
+				sgame_debug_spend_points(8, 126, 1); // Bash level 1
+				sgame_debug_set_gold(777);
+				settle();
+				show("before saving");
+				sgame_save();
+				settle();
+				printf("saved\n");
+			} else {
+				show("loaded");
+			}
+		}
 		if (getenv("D2TALK")) {
 			// Click Charsi (monstats 154) and list what the server sends back.
 			std::vector<std::vector<uint8_t>> log;

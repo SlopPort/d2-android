@@ -603,3 +603,14 @@ extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_sell(JNIEnv* env, j
 extern "C" JNIEXPORT jint JNICALL Java_pl_d2port_d2_D2Native_interactingWith(JNIEnv* env, jclass) { EnvScope scope(env); return sgame_interact_npc(); }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_pl_d2port_d2_D2Native_npcInteractable(JNIEnv* env, jclass, jint cls) { EnvScope scope(env); return sgame_npc_interactable(cls); }
+
+// ------------------------------------------------------------------ saves
+
+extern "C" void d2native_set_save_dir(const char* dir);
+// Directory D2Game reads and writes <name>.d2s in (FOG_GetSavePath); must end with '/'.
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_setSaveDir(JNIEnv* env, jclass, jstring jdir) {
+	const char* p = env->GetStringUTFChars(jdir, nullptr);
+	d2native_set_save_dir(p);
+	env->ReleaseStringUTFChars(jdir, p);
+}
+extern "C" JNIEXPORT void JNICALL Java_pl_d2port_d2_D2Native_serverSave(JNIEnv* env, jclass) { EnvScope scope(env); sgame_save(); }

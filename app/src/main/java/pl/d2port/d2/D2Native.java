@@ -69,6 +69,10 @@ public final class D2Native {
     /** Fixed game seed for the next startGame (-1 = random, as in normal play). */
     public static native void setGameSeed(int seed);
     public static native long startGame(int charClass, int difficulty);
+    /** Directory for .d2s saves (ends with '/'); a game with a saved character's name loads it. */
+    public static native void setSaveDir(String dir);
+    /** Save the hero now (D2Game's GAME_TriggerClientSave). */
+    public static native void serverSave();
     /** Process client commands and run due server frames (call every 40 ms). */
     public static native void serverTick();
     /** The player has entered the game; commands are accepted. */

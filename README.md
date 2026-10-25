@@ -33,9 +33,10 @@ Early but playable in Act I:
   items), the first belt row (drink potions) and a virtual stick. The buttons are labelled in Polish.
 - **Vendors:** the "Rozmowa" (Talk) button walks to the nearest NPC and talks to her (0x13); the
   store opens next to the inventory (0x38), a tap buys (0x32) or sells (0x33).
+- **Saves:** the hero is saved as `<name>.d2s` in the app's files when the app goes to the background and loaded on the next start (D2Game's own save code).
 - **1.13c respec:** the Token of Absolution works (ported from the 1.14d binary).
 
-Not done yet: NPC dialogue and quests, hirelings, experience and levelling, saving, skill bar,
+Not done yet: NPC dialogue and quests, hirelings, experience and levelling, skill bar,
 sound, Acts II-V. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start
