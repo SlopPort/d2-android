@@ -103,6 +103,7 @@ uint16_t __fastcall MONSTERUNIQUE_GetNameSeed(D2UnitStrc* pUnit)
 }
 
 //D2Game.0x6FC6AC70
+//1.14d: 0x005A0180
 int32_t __fastcall MONSTERUNIQUE_CheckMonTypeFlag(D2UnitStrc* pUnit, uint16_t nFlag)
 {
     if (pUnit && pUnit->dwUnitType == UNIT_MONSTER && pUnit->pMonsterData)
@@ -114,6 +115,7 @@ int32_t __fastcall MONSTERUNIQUE_CheckMonTypeFlag(D2UnitStrc* pUnit, uint16_t nF
 }
 
 //D2Game.0x6FC6ACA0
+//1.14d: 0x005A01B0
 void __fastcall MONSTERUNIQUE_ToggleMonTypeFlag(D2UnitStrc* pUnit, uint16_t nFlag, int32_t bSet)
 {
     if (!pUnit || pUnit->dwUnitType != UNIT_MONSTER || !pUnit->pMonsterData)
@@ -231,34 +233,35 @@ void __fastcall MONSTERUNIQUE_UMod2_HealthBonus(D2UnitStrc* pUnit, int32_t nUMod
 }
 
 //D2Game.0x6FC6AF70
-int32_t __fastcall MONSTERUNIQUE_CalculatePercentage(int32_t a1, int32_t a2, int32_t a3)
+//1.14d: 0x00483360
+int32_t __fastcall MONSTERUNIQUE_CalculatePercentage(int32_t nValue, int32_t nMultiplier, int32_t nDivisor)
 {
-    if (!a3)
+    if (!nDivisor)
     {
         return 0;
     }
 
-    if (a1 <= 1048576)
+    if (nValue <= 0x100000)
     {
-        if (a2 <= 65536)
+        if (nMultiplier <= 0x10000)
         {
-            return a2 * a1 / a3;
+            return static_cast<int32_t>(static_cast<uint32_t>(nMultiplier) * static_cast<uint32_t>(nValue)) / nDivisor;
         }
 
-        if (a3 <= a2 >> 4)
+        if (nDivisor <= (nMultiplier >> 4))
         {
-            return a1 * (a2 / a3);
+            return static_cast<int32_t>(static_cast<uint32_t>(nValue) * static_cast<uint32_t>(nMultiplier / nDivisor));
         }
     }
     else
     {
-        if (a3 <= a1 >> 4)
+        if (nDivisor <= (nValue >> 4))
         {
-            return a2 * (a1 / a3);
+            return static_cast<int32_t>(static_cast<uint32_t>(nMultiplier) * static_cast<uint32_t>(nValue / nDivisor));
         }
     }
 
-    return a2 * (int64_t)a1 / a3;
+    return static_cast<int32_t>(nMultiplier * (int64_t)nValue / nDivisor);
 }
 
 //D2Game.0x6FC6AFF0
@@ -292,8 +295,8 @@ void __fastcall MONSTERUNIQUE_UMod16_Champion(D2UnitStrc* pUnit, int32_t nUMod, 
     }
 
     STATLIST_SetUnitStat(pUnit, STAT_LEVEL, STATLIST_UnitGetStatValue(pUnit, STAT_LEVEL, 0) - 1, 0);
-    const int32_t nExperience = STATLIST_GetUnitBaseStat(pUnit, STAT_EXPERIENCE, 0);
-    STATLIST_SetUnitStat(pUnit, STAT_EXPERIENCE, nExperience - 2 * nExperience / 5u, 0);
+    const uint32_t nExperience = static_cast<uint32_t>(STATLIST_GetUnitBaseStat(pUnit, STAT_EXPERIENCE, 0));
+    STATLIST_SetUnitStat(pUnit, STAT_EXPERIENCE, static_cast<int32_t>(nExperience - 2u * (nExperience / 5u)), 0);
 
     D2MonUModTxt* pMonUModTxtRecord = MONSTERUNIQUE_GetMonUModTxtRecord(11);
     int32_t nDamagePercent = pMonUModTxtRecord ? pMonUModTxtRecord->dwConstants : 0;
@@ -303,8 +306,8 @@ void __fastcall MONSTERUNIQUE_UMod16_Champion(D2UnitStrc* pUnit, int32_t nUMod, 
     D2DifficultyLevelsTxt* pDifficultyLevelsTxtRecord = DATATBLS_GetDifficultyLevelsTxtRecord(pGame->nDifficulty);
     if (pDifficultyLevelsTxtRecord)
     {
-        nDamagePercent = nDamagePercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus / 100;
-        nToHitPercent = nToHitPercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus / 100;
+        nDamagePercent = (int32_t)(nDamagePercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus) / 100;
+        nToHitPercent = (int32_t)(nToHitPercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus) / 100;
     }
 
     STATLIST_AddUnitStat(pUnit, STAT_DAMAGEPERCENT, nDamagePercent, 0);
@@ -423,7 +426,7 @@ void __fastcall MONSTERUNIQUE_UMod39_Berserk(D2UnitStrc* pUnit, int32_t nUMod, i
     D2DifficultyLevelsTxt* pDifficultyLevelsTxtRecord = DATATBLS_GetDifficultyLevelsTxtRecord(pUnit->pGame->nDifficulty);
     if (pDifficultyLevelsTxtRecord)
     {
-        nDamage = 3 * pDifficultyLevelsTxtRecord->dwChampionDmgBonus;
+        nDamage = (int32_t)(300u * pDifficultyLevelsTxtRecord->dwChampionDmgBonus) / 100;
     }
     STATLIST_AddUnitStat(pUnit, STAT_DAMAGEPERCENT, nDamage, 0);
     STATLIST_AddUnitStat(pUnit, STAT_ITEM_TOHIT_PERCENT, nDamage, 0);
@@ -687,8 +690,8 @@ void __fastcall MONSTERUNIQUE_UMod5_Strong(D2UnitStrc* pUnit, int32_t nUMod, int
     D2DifficultyLevelsTxt* pDifficultyLevelsTxtRecord = DATATBLS_GetDifficultyLevelsTxtRecord(pGame->nDifficulty);
     if (pDifficultyLevelsTxtRecord)
     {
-        nDamagePercent = nDamagePercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus / 100;
-        nToHitPercent = nToHitPercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus / 100;
+        nDamagePercent = (int32_t)(nDamagePercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus) / 100;
+        nToHitPercent = (int32_t)(nToHitPercent * pDifficultyLevelsTxtRecord->dwChampionDmgBonus) / 100;
     }
 
     STATLIST_AddUnitStat(pUnit, STAT_DAMAGEPERCENT, nDamagePercent, 0);
@@ -1132,6 +1135,7 @@ void __fastcall MONSTERUNIQUE_CastNova(D2GameStrc* pGame, D2UnitStrc* pUnit, int
 }
 
 //D2Game.0x6FC6CB40
+//1.14d: 0x005A29A0
 void __fastcall MONSTERUNIQUE_CastLightUniqueMissile(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nUMod, int32_t bUnique)
 {
     if (!bUnique)
@@ -1150,7 +1154,7 @@ void __fastcall MONSTERUNIQUE_CastLightUniqueMissile(D2GameStrc* pGame, D2UnitSt
     {
         if (pUnit && pUnit->dwUnitType == UNIT_MONSTER && pUnit->pMonsterData)
         {
-            pUnit->pMonsterData->nLastAnimMode &= 0xFEu;
+            pUnit->pMonsterData->nTypeFlag &= ~MONTYPEFLAG_LIGHTNINGUNIQUE;
         }
         return;
     }
@@ -1158,7 +1162,7 @@ void __fastcall MONSTERUNIQUE_CastLightUniqueMissile(D2GameStrc* pGame, D2UnitSt
     if (pUnit && pUnit->dwUnitType == UNIT_MONSTER && pUnit->pMonsterData)
     {
         pUnit->pMonsterData->dwDurielFlag = pGame->dwGameFrame;
-        pUnit->pMonsterData->nLastAnimMode |= 1u;
+        pUnit->pMonsterData->nTypeFlag |= MONTYPEFLAG_LIGHTNINGUNIQUE;
     }
 
     D2MissileStrc missileParams = {};
@@ -1604,7 +1608,7 @@ void __fastcall sub_6FC6DA40(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nUMod
         return;
     }
 
-    if (pOwner->dwUnitType == UNIT_MONSTER && pOwner->pMonsterData && pOwner->pMonsterData->nTypeFlag & 0x80)
+    if (pOwner->dwUnitType == UNIT_MONSTER && pOwner->pMonsterData && pOwner->pMonsterData->nTypeFlag & MONTYPEFLAG_MULTISHOT)
     {
         return;
     }
@@ -1639,7 +1643,7 @@ void __fastcall sub_6FC6DA40(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nUMod
 
     if (pOwner->dwUnitType == UNIT_MONSTER && pOwner->pMonsterData)
     {
-        pOwner->pMonsterData->nTypeFlag |= 0x80u;
+        pOwner->pMonsterData->nTypeFlag |= MONTYPEFLAG_MULTISHOT;
     }
 
     const int32_t nMissileLevel = MISSILE_GetLevel(pUnit);
@@ -1649,7 +1653,7 @@ void __fastcall sub_6FC6DA40(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nUMod
 
     if (pOwner->dwUnitType == UNIT_MONSTER && pOwner->pMonsterData)
     {
-        pOwner->pMonsterData->nTypeFlag &= 0x7Fu;
+        pOwner->pMonsterData->nTypeFlag &= ~MONTYPEFLAG_MULTISHOT;
     }
 }
 
@@ -2181,7 +2185,7 @@ void __fastcall sub_6FC6E940(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t a3)
         nRandCount = 9 - nIndex;
     }
 
-    D2_ASSERT(sgptDataTables->nMonUModTxtRecordCount < 256);
+    D2_ASSERT(sgptDataTables->nMonUModTxtRecordCount <= 256);
     uint8_t bUModUsageTable[256] = {};
 
     for (int32_t i = 0; i < nIndex; ++i)
@@ -2189,10 +2193,9 @@ void __fastcall sub_6FC6E940(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t a3)
         bUModUsageTable[pMonUmods[i]] = 1;
     }
 
+    uint8_t* pUMod = &pMonUmods[nIndex];
     for (int32_t i = 0; i < nRandCount; ++i)
     {
-        uint8_t* pUMod = &pMonUmods[nIndex];
-
         const int32_t nUMod = sub_6FC6EE90(pGame, pUnit, bUModUsageTable);
         if (!nUMod)
         {
@@ -2680,7 +2683,7 @@ D2UnitStrc* __fastcall D2GAME_SpawnSuperUnique_6FC6F690(D2GameStrc* pGame, D2Act
         return pMonster;
     }
 
-    D2_ASSERT(sgptDataTables->nMonUModTxtRecordCount < 256);
+    D2_ASSERT(sgptDataTables->nMonUModTxtRecordCount <= 256);
     uint8_t bUModUsageTable[256] = {};
 
     int32_t bAuraEnchanted = 0;
@@ -2834,7 +2837,7 @@ D2UnitStrc* __fastcall sub_6FC6FBA0(D2GameStrc* pGame, D2ActiveRoomStrc* pRoom, 
     }
     else
     {
-        pMonsterData->nTypeFlag &= (uint8_t)~MONTYPEFLAG_CHAMPION;
+        pMonsterData->nTypeFlag &= ~MONTYPEFLAG_CHAMPION;
     }
 
     int32_t bIsAuraEnchanted = 0;

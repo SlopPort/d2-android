@@ -511,17 +511,14 @@ int32_t __fastcall PLRSAVE2_CreateSaveFile(D2GameStrc* pGame, D2UnitStrc* pPlaye
         return 2;
     }
 
-    // The header writer moves pData past the header; the size and checksum below cover the whole file.
-    uint8_t* const pFileStart = pData;
     const uint8_t* pEnd = &pData[nMaxSize];
-    int32_t nResult = PLRSAVE2_WriteSaveHeader(pGame, pPlayer, &pData, &pData[nMaxSize]);
+    uint8_t* ppSection = pData;
+    int32_t nResult = PLRSAVE2_WriteSaveHeader(pGame, pPlayer, &ppSection, pEnd);
     if (nResult)
     {
         return nResult;
     }
 
-    
-    uint8_t* ppSection = pData;
     if (ppSection + 298 > pEnd)
     {
         return 1;
@@ -621,10 +618,10 @@ int32_t __fastcall PLRSAVE2_CreateSaveFile(D2GameStrc* pGame, D2UnitStrc* pPlaye
         }
     }
 
-    *pSize = ppSection - pFileStart;
+    *pSize = ppSection - pData;
 
-    *((uint32_t*)pFileStart + 2) = *pSize;
-    *((uint32_t*)pFileStart + 3) = FOG_ComputeChecksum(pFileStart, *pSize);
+    *((uint32_t*)pData + 2) = *pSize;
+    *((uint32_t*)pData + 3) = FOG_ComputeChecksum(pData, *pSize);
 
     return 0;
 }
@@ -1609,8 +1606,8 @@ int32_t __fastcall PLRSAVE2_ProcessSaveFile(D2GameStrc* pGame, D2ClientStrc* pCl
 
         uint8_t* pSectionEnd = pSection + 298;
         const uint32_t nVersion = pSaveHeader->dwVersion;
-        // The quest section starts with its own header ('Woo!', version 6; written by PLRSAVE2_CreateSaveFile).
-        if (pSectionEnd > pSaveFileEnd || *(uint32_t*)pSection != '!ooW' || *(uint32_t*)&pSection[4] != 6)
+        const D2SaveHeaderStrc* pQuestHeader = (const D2SaveHeaderStrc*)pSection;
+        if (pSectionEnd > pSaveFileEnd || pQuestHeader->dwHeaderMagic != '!ooW' || pQuestHeader->dwVersion != 6)
         {
             nErrorCode = PLRSAVE2ERROR_BAD_QUESTRECORD;
         }

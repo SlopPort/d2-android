@@ -1028,7 +1028,7 @@ static bool ITEMS_CheckStatRequirement(D2UnitStrc* pItem, D2UnitStrc* pUnit, D2C
 	{
 		bStatReqMet = TRUE;
 		// Note: Owner was not checked in the original game for STAT_DEXTERITY
-		if (bEquipping && STATLIST_GetOwner(pItem, 0))
+		if (bEquipping && (stat == STAT_DEXTERITY || STATLIST_GetOwner(pItem, 0)))
 		{
 			const int nStatBonusFromSockets = ITEMS_GetBonusStatFromSockets(pItem, stat);
 			if ((nUnitStat - nStatBonusFromSockets) <= 0 || (nUnitStat - nStatBonusFromSockets) < nStatWithPctBonus)
@@ -1042,6 +1042,7 @@ static bool ITEMS_CheckStatRequirement(D2UnitStrc* pItem, D2UnitStrc* pUnit, D2C
 
 
 //D2Common.0x6FD99740 (#10756)
+//1.14d: 0x0062EAF0
 BOOL __stdcall ITEMS_CheckRequirements(D2UnitStrc* pItem, D2UnitStrc* pUnit, BOOL bEquipping, BOOL* bStrength, BOOL* bDexterity, BOOL* bLevel)
 {
 	if (bStrength)
@@ -1091,9 +1092,8 @@ BOOL __stdcall ITEMS_CheckRequirements(D2UnitStrc* pItem, D2UnitStrc* pUnit, BOO
 	int nReqDexBonus = 0;
 	if (int nReqPctBonus = STATLIST_UnitGetItemStatOrSkillStatValue(pItem, STAT_ITEM_REQ_PERCENT, 0))
 	{
-		// It seems the original game has some additional logic to handle overflow here
-		nReqStrBonus = nBaseReqStr * int64_t(nReqPctBonus) / 100;
-		nReqDexBonus = nBaseReqDex * int64_t(nReqPctBonus) / 100;
+		nReqStrBonus = DATATBLS_ApplyRatio(nBaseReqStr, nReqPctBonus, 100);
+		nReqDexBonus = DATATBLS_ApplyRatio(nBaseReqDex, nReqPctBonus, 100);
 	}
 
 	if (pItemData && pItemData->dwItemFlags & IFLAG_ETHEREAL)
@@ -1814,10 +1814,10 @@ int __fastcall ITEMS_CalculateAdditionalCostsForChargedSkills(D2UnitStrc* pUnit,
 				pSkillsTxtRecord = DATATBLS_GetSkillsTxtRecord(nSkillId);
 				if (pSkillsTxtRecord)
 				{
-					nBase = nBaseCost * ((pStat[nCounter].nLayer & sgptDataTables->nShiftedStuff) + 2 * pSkillsTxtRecord->wReqLevel / 6 + 2);
+					nBase = nBaseCost * ((pStat[nCounter].nLayer & sgptDataTables->nShiftedStuff) + 2 * (pSkillsTxtRecord->wReqLevel / 6) + 2);
 					if (nBase > 65535 && pSkillsTxtRecord->nCostMult)
 					{
-						nAdd = pSkillsTxtRecord->nCostMult * nBase / 1024;
+						nAdd = pSkillsTxtRecord->nCostMult * (nBase / 1024);
 					}
 					else
 					{
@@ -1881,9 +1881,9 @@ void __fastcall ITEMS_CalculateAdditionalCostsForBonusStats(D2UnitStrc* pItem, i
 					{
 						if (nBonusValue * *pSellCost > 65535 && pSkillsTxtRecord->nCostMult)
 						{
-							nSell += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nBonusValue * *pSellCost / 1024;
-							nBuy += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nBonusValue * *pBuyCost / 4096;
-							nRep += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nBonusValue * *pRepCost / 1024;
+							nSell += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nBonusValue * *pSellCost / 1024);
+							nBuy += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nBonusValue * *pBuyCost / 4096);
+							nRep += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nBonusValue * *pRepCost / 1024);
 						}
 						else
 						{
@@ -1902,9 +1902,9 @@ void __fastcall ITEMS_CalculateAdditionalCostsForBonusStats(D2UnitStrc* pItem, i
 
 					if (nValue * *pSellCost > 65535 && pSkillsTxtRecord->nCostMult)
 					{
-						nSell += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nValue * *pSellCost / 1024;
-						nBuy += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nValue * *pBuyCost / 4096;
-						nRep += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * nValue * *pRepCost / 1024;
+						nSell += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nValue * *pSellCost / 1024);
+						nBuy += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nValue * *pBuyCost / 4096);
+						nRep += pSkillsTxtRecord->nCostAdd + pSkillsTxtRecord->nCostMult * (nValue * *pRepCost / 1024);
 					}
 					else
 					{
@@ -1920,9 +1920,9 @@ void __fastcall ITEMS_CalculateAdditionalCostsForBonusStats(D2UnitStrc* pItem, i
 
 					if (nValue * *pSellCost > 65535 && pItemStatCostTxtRecord->dwMultiply)
 					{
-						nSell += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nValue * *pSellCost / 1024;
-						nBuy += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nValue * *pBuyCost / 1024;
-						nRep += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nValue * *pRepCost / 1024;
+						nSell += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nValue * *pSellCost / 1024);
+						nBuy += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nValue * *pBuyCost / 1024);
+						nRep += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nValue * *pRepCost / 1024);
 					}
 					else
 					{
@@ -1934,9 +1934,9 @@ void __fastcall ITEMS_CalculateAdditionalCostsForBonusStats(D2UnitStrc* pItem, i
 				default:
 					if (nBonusValue * *pSellCost > 65535 && pItemStatCostTxtRecord->dwMultiply)
 					{
-						nSell += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nBonusValue * *pSellCost / 1024;
-						nBuy += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nBonusValue * *pBuyCost / 1024;
-						nRep += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * nBonusValue * *pRepCost / 1024;
+						nSell += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nBonusValue * *pSellCost / 1024);
+						nBuy += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nBonusValue * *pBuyCost / 1024);
+						nRep += pItemStatCostTxtRecord->dwAdd + pItemStatCostTxtRecord->dwMultiply * (nBonusValue * *pRepCost / 1024);
 					}
 					else
 					{
@@ -2144,9 +2144,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 			{
 				if (nSellCost > 65535 && pMagicAffixTxtRecord->dwMultiply)
 				{
-					nSell = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nSellCost / 1024;
-					nBuy = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nBuyCost / 1024;
-					nRep = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nRepCost / 1024;
+					nSell = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nSellCost / 1024);
+					nBuy = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nBuyCost / 1024);
+					nRep = pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nRepCost / 1024);
 				}
 				else
 				{
@@ -2167,9 +2167,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					{
 						if (nSellCost > 65535 && pMagicAffixTxtRecord->dwMultiply)
 						{
-							nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nSellCost / 1024;
-							nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nBuyCost / 1024;
-							nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nRepCost / 1024;
+							nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nSellCost / 1024);
+							nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nBuyCost / 1024);
+							nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nRepCost / 1024);
 						}
 						else
 						{
@@ -2184,9 +2184,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					{
 						if (nSellCost > 65535 && pMagicAffixTxtRecord->dwMultiply)
 						{
-							nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nSellCost / 1024;
-							nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nBuyCost / 1024;
-							nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nRepCost / 1024;
+							nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nSellCost / 1024);
+							nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nBuyCost / 1024);
+							nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nRepCost / 1024);
 						}
 						else
 						{
@@ -2208,20 +2208,19 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					{
 						if (nSellCost > 65535 && pUniqueItemsTxtRecord->dwCostMult)
 						{
-							nSell += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * nSellCost / 1024;
-							nBuy += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * nBuyCost / 1024;
-							nRep += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * nRepCost / 1024;
+							nSell += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * (nSellCost / 1024);
+							nBuy += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * (nBuyCost / 1024);
+							nRep += pUniqueItemsTxtRecord->dwCostAdd + pUniqueItemsTxtRecord->dwCostMult * (nRepCost / 1024);
 						}
 						else
 						{
 							nSell += pUniqueItemsTxtRecord->dwCostAdd + nSellCost * pUniqueItemsTxtRecord->dwCostMult / 1024;
 							nBuy += pUniqueItemsTxtRecord->dwCostAdd + nBuyCost * pUniqueItemsTxtRecord->dwCostMult / 1024;
 							nRep += pUniqueItemsTxtRecord->dwCostAdd + nRepCost * pUniqueItemsTxtRecord->dwCostMult / 1024;
-							break;
 						}
+						break;
 					}
 				}
-				//TODO: Not sure if it was intended to have no break here
 
 			case ITEMQUAL_MAGIC:
 				pMagicAffixTxtRecord = DATATBLS_GetMagicAffixTxtRecord(pItemData->wMagicPrefix[0]);
@@ -2229,9 +2228,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 				{
 					if (nSellCost > 65535 && pMagicAffixTxtRecord->dwMultiply)
 					{
-						nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nSellCost / 1024;
-						nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nBuyCost / 1024;
-						nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nRepCost / 1024;
+						nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nSellCost / 1024);
+						nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nBuyCost / 1024);
+						nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nRepCost / 1024);
 					}
 					else
 					{
@@ -2246,9 +2245,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 				{
 					if (nSellCost > 65535 && pMagicAffixTxtRecord->dwMultiply)
 					{
-						nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nSellCost / 1024;
-						nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nBuyCost / 1024;
-						nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * nRepCost / 1024;
+						nSell += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nSellCost / 1024);
+						nBuy += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nBuyCost / 1024);
+						nRep += pMagicAffixTxtRecord->dwAdd + pMagicAffixTxtRecord->dwMultiply * (nRepCost / 1024);
 					}
 					else
 					{
@@ -2274,9 +2273,9 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					{
 						if (nSellCost > 65535 && pSetItemsTxtRecord->dwCostMult)
 						{
-							nSell += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * nSellCost / 1024;
-							nBuy += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * nBuyCost / 1024;
-							nRep += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * nRepCost / 1024;
+							nSell += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * (nSellCost / 1024);
+							nBuy += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * (nBuyCost / 1024);
+							nRep += pSetItemsTxtRecord->dwCostAdd + pSetItemsTxtRecord->dwCostMult * (nRepCost / 1024);
 						}
 						else
 						{
@@ -2352,7 +2351,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 		else if (nTransactionType == D2C_TransactionTypes::TRANSACTIONTYPE_REPAIR)
 		{
 			pItemTypesTxtRecord = DATATBLS_GetItemTypesTxtRecord(pItemsTxtRecord->wType[0]);
-			if (!pItemTypesTxtRecord || !pItemTypesTxtRecord->wQuiver || !pItemTypesTxtRecord->nThrowable)
+			if (!pItemTypesTxtRecord || (!pItemTypesTxtRecord->wQuiver && !pItemTypesTxtRecord->nThrowable))
 			{
 				if (!pItemsTxtRecord->nNoDurability && pItemsTxtRecord->nDurability && STATLIST_GetMaxDurabilityFromUnit(pItem) && STATLIST_UnitGetStatValue(pItem, STAT_ITEM_INDESCTRUCTIBLE, 0) <= 0)
 				{
@@ -2365,7 +2364,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 						{
 							if (nDurability < nMaxDura - 1)
 							{
-								nRepCost *= (nMaxDura - 1) / nMaxDura;
+								nRepCost = static_cast<int32_t>(static_cast<uint32_t>(nRepCost) * static_cast<uint32_t>(nMaxDura - 1)) / nMaxDura;
 							}
 							else
 							{
@@ -2374,7 +2373,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 						}
 						else
 						{
-							nRepCost *= (nMaxDura - nDurability) / nMaxDura;
+							nRepCost = static_cast<int32_t>(static_cast<uint32_t>(nRepCost) * static_cast<uint32_t>(nMaxDura - nDurability)) / nMaxDura;
 						}
 					}
 					else
@@ -2394,7 +2393,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 		}
 		else
 		{
-			nSellCost = pNpcTxtRecord->dwSellMult * nSellCost / 1024;
+			nSellCost = pNpcTxtRecord->dwSellMult * (nSellCost / 1024);
 		}
 
 		if (nBuyCost <= 65535 || !pNpcTxtRecord->dwSellMult)//TODO: Probably Copy-Paste Error by Blizzard, should be dwBuyMult
@@ -2412,7 +2411,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 		}
 		else
 		{
-			nRepCost = pNpcTxtRecord->dwRepMult * nRepCost / 1024;
+			nRepCost = pNpcTxtRecord->dwRepMult * (nRepCost / 1024);
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -2422,7 +2421,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 			{
 				if (nSellCost > 65535 && pNpcTxtRecord->dwQuestSellMult[i])
 				{
-					nSellCost = pNpcTxtRecord->dwQuestSellMult[i] * nSellCost / 1024;
+					nSellCost = pNpcTxtRecord->dwQuestSellMult[i] * (nSellCost / 1024);
 				}
 				else
 				{
@@ -2431,7 +2430,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 
 				if (nBuyCost > 65535 && pNpcTxtRecord->dwQuestBuyMult[i])
 				{
-					nBuyCost = pNpcTxtRecord->dwQuestBuyMult[i] * nBuyCost / 1024;
+					nBuyCost = pNpcTxtRecord->dwQuestBuyMult[i] * (nBuyCost / 1024);
 				}
 				else
 				{
@@ -2440,7 +2439,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 
 				if (nRepCost > 65535 && pNpcTxtRecord->dwQuestRepMult[i])
 				{
-					nRepCost = pNpcTxtRecord->dwQuestRepMult[i] * nRepCost / 1024;
+					nRepCost = pNpcTxtRecord->dwQuestRepMult[i] * (nRepCost / 1024);
 				}
 				else
 				{
@@ -2473,7 +2472,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 						nRepCost = 0;
 					}
 
-					nBuyCost *= (nMaxStack - nRepCost);
+					nBuyCost = nBuyCost * nMaxStack - nRepCost;
 				}
 				else
 				{
@@ -2531,7 +2530,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 			{
 				nStack = pItemsTxtRecord->dwMinStack + pItemsTxtRecord->dwMaxStack;
 
-				v27 = ((signed int)nStack - HIDWORD(nStack)) >> 1;
+				v27 = nStack / 2;
 				if (v27 < 1)
 				{
 					v27 = 1;
@@ -2543,7 +2542,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					if (pUberItemsTxtRecord)
 					{
 						v30 = 100 * (nLevel - pUberItemsTxtRecord->nLevel);
-						v23 = (((signed int)v30 - HIDWORD(v30)) >> 1) + 1;
+						v23 = v30 / 2 + 1;
 						if (v23 < 0)
 						{
 							v23 = 0;
@@ -2558,7 +2557,7 @@ int __fastcall ITEMS_CalculateTransactionCost(D2UnitStrc* pPlayer, D2UnitStrc* p
 					if (pUltraItemsTxtRecord)
 					{
 						v30 = 100 * (nLevel - pUltraItemsTxtRecord->nLevel);
-						v22 = (((BYTE4(v30) & 3) + (signed int)v30) >> 2) + 1;
+						v22 = v30 / 4 + 1;
 						if (v22 < 0)
 						{
 							v22 = 0;
@@ -2623,9 +2622,9 @@ void __fastcall ITEMS_CalculateAdditionalCostsForItemSkill(D2UnitStrc* pItem, in
 					{
 						if (*pSellCost > 65535 && pSkillsTxtRecord->nCostMult)
 						{
-							nSell += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pSellCost * pSkillsTxtRecord->nCostMult / 1024);
-							nBuy += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pBuyCost * pSkillsTxtRecord->nCostMult / 4096);
-							nRep += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pRepCost * pSkillsTxtRecord->nCostMult / 1024);
+							nSell += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pSellCost * (pSkillsTxtRecord->nCostMult / 1024));
+							nBuy += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pBuyCost * (pSkillsTxtRecord->nCostMult / 4096));
+							nRep += (2 * pStat[nStatId].nValue - 1) * (pSkillsTxtRecord->nCostAdd + *pRepCost * (pSkillsTxtRecord->nCostMult / 1024));
 						}
 						else
 						{

@@ -57,7 +57,7 @@ int32_t __fastcall sub_6FC3C640(int32_t nClientId, int16_t nGameId, int16_t nCli
 
     SStrCopy(packetB1.szGameName, szGameName, 0x10u);
     
-    return D2NET_10006(0, nClientId, &packetB1, sizeof(packetB1));
+    return SERVER_SendPacketToClient(D2NET_SEND_SYSTEM, nClientId, &packetB1, sizeof(packetB1));
 }
 
 //D2Game.0x6FC3C690
@@ -67,7 +67,7 @@ void __fastcall sub_6FC3C690(int32_t nClientId)
 
     packetAF.nHeader = 0xAF;
 
-    D2NET_10006(0, nClientId, &packetAF, sizeof(packetAF));
+    SERVER_SendPacketToClient(D2NET_SEND_SYSTEM, nClientId, &packetAF, sizeof(packetAF));
 }
 
 //D2Game.0x6FC3C6B0
@@ -77,7 +77,7 @@ void __fastcall sub_6FC3C6B0(int32_t nClientId)
 
     packet06.nHeader = 0x06;
 
-    D2NET_10006(1, nClientId, &packet06, sizeof(packet06));
+    SERVER_SendPacketToClient(D2NET_SEND_GAME, nClientId, &packet06, sizeof(packet06));
 }
 
 //D2Game.0x6FC3C6D0
@@ -88,7 +88,7 @@ void __fastcall sub_6FC3C6D0(int32_t nClientId, uint32_t nErrorCode)
     packetB3.nHeader = 0xB3;
     packetB3.nErrorCode = nErrorCode;
     
-    D2NET_10006(0, nClientId, &packetB3, sizeof(packetB3));
+    SERVER_SendPacketToClient(D2NET_SEND_SYSTEM, nClientId, &packetB3, sizeof(packetB3));
 }
 
 //D2Game.0x6FC3C6F0
@@ -281,6 +281,7 @@ void __fastcall D2GAME_PACKETS_SendPacket0x0F_6FC3CA00(D2ClientStrc* pClient, ch
 }
 
 //D2Game.0x6FC3CA90
+//1.14d: 0x0053B5F0
 void __fastcall D2GAME_PACKETS_SendPacket0x68_6FC3CA90(D2ClientStrc* pClient, uint8_t nHeader, int32_t nUnitGUID, int8_t a4, int8_t a5, int32_t a6, int8_t a7)
 {
     D2GSPacketSrv68 packet68 = {};
@@ -289,7 +290,7 @@ void __fastcall D2GAME_PACKETS_SendPacket0x68_6FC3CA90(D2ClientStrc* pClient, ui
     packet68.nUnitGUID = nUnitGUID;
     packet68.unk0x05 = a4;
     packet68.unk0x0A = a5;
-    packet68.unk0x10 = a6;
+    packet68.unk0x0B = a6;
 
     D2UnitStrc* pMonster = SUNIT_GetServerUnit(CLIENTS_GetGame(pClient), UNIT_MONSTER, nUnitGUID);
 
@@ -695,7 +696,7 @@ void __fastcall D2GAME_PACKETS_SendPacket0x1A_B_C_6FC3D410(D2ClientStrc* pClient
             D2GSPacketSrv1B packet1B = {};
 
             packet1B.nHeader = 0x1B;
-            packet1B.nExperience = nExperience;
+            packet1B.nExperience = nDiff;
 
             D2GAME_PACKETS_SendPacket_6FC3C710(pClient, &packet1B, sizeof(packet1B));
         }
@@ -704,7 +705,7 @@ void __fastcall D2GAME_PACKETS_SendPacket0x1A_B_C_6FC3D410(D2ClientStrc* pClient
             D2GSPacketSrv1A packet1A = {};
 
             packet1A.nHeader = 0x1A;
-            packet1A.nExperience = nExperience;
+            packet1A.nExperience = nDiff;
 
             D2GAME_PACKETS_SendPacket_6FC3C710(pClient, &packet1A, sizeof(packet1A));
         }
@@ -990,7 +991,7 @@ void __fastcall D2GAME_PACKETS_SendPacket0x22_6FC3DBE0(D2ClientStrc* pClient, BY
     packet22.nUnitGUID = nUnitGUID;
     packet22.nSkillId = nSkillId;
     packet22.nQuantity = a5;
-    packet22.bIsCorpse = (!pUnit || !STATES_CheckState(pUnit, STATE_PLAYERBODY));
+    packet22.bIsCorpse = pUnit && STATES_CheckState(pUnit, STATE_PLAYERBODY);
 
     D2GAME_PACKETS_SendPacket_6FC3C710(pClient, &packet22, sizeof(packet22));
 }

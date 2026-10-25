@@ -120,7 +120,7 @@ void __fastcall D2GAME_ITEMMODE_ServerStatlistCallback_6FC41910(D2GameStrc* pGam
             {
                 nPreviousValue = std::max(nPreviousValue, 256);
 
-                const int32_t nNewHp = D2Clamp((int32_t)(int64_t)((double)nHitpoints / (double)nPreviousValue * (double)nNewValue), 1, nNewValue);
+                const int32_t nNewHp = std::min(std::max((int32_t)(int64_t)((double)nHitpoints / (double)nPreviousValue * (double)nNewValue), 1), nNewValue);
                 STATLIST_SetUnitStat(pOwner, STAT_HITPOINTS, nNewHp, 0);
 
                 if (pOwner->dwUnitType == UNIT_MONSTER && pOwner->pMonsterData)
@@ -144,7 +144,7 @@ void __fastcall D2GAME_ITEMMODE_ServerStatlistCallback_6FC41910(D2GameStrc* pGam
             {
                 nPreviousValue = std::max(nPreviousValue, 256);
 
-                const int32_t nNewMana = D2Clamp((int32_t)(int64_t)((double)nMana / (double)nPreviousValue * (double)nNewValue), 1, nNewValue);
+                const int32_t nNewMana = std::min(std::max((int32_t)(int64_t)((double)nMana / (double)nPreviousValue * (double)nNewValue), 1), nNewValue);
                 STATLIST_SetUnitStat(pOwner, STAT_MANA, nNewMana, 0);
             }
         }
@@ -159,7 +159,7 @@ void __fastcall D2GAME_ITEMMODE_ServerStatlistCallback_6FC41910(D2GameStrc* pGam
             {
                 nPreviousValue = std::max(nPreviousValue, 256);
 
-                const int32_t nNewStamina = D2Clamp((int32_t)(int64_t)((double)nStamina / (double)nPreviousValue * (double)nNewValue), 1, nNewValue);
+                const int32_t nNewStamina = std::min(std::max((int32_t)(int64_t)((double)nStamina / (double)nPreviousValue * (double)nNewValue), 1), nNewValue);
                 STATLIST_SetUnitStat(pOwner, STAT_STAMINA, nNewStamina, 0);
             }
         }
@@ -4000,6 +4000,11 @@ int32_t __fastcall sub_6FC47D30(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nI
                     return 1;
                 }
 #endif
+                else
+                {
+                    // Original 6FC483A9: any other item code gives up silently (no sound, a6 unchanged).
+                    return 0;
+                }
 
                 SUNIT_AttachSound(pUnit, 19, pUnit);
             }
@@ -4508,7 +4513,7 @@ int32_t __fastcall sub_6FC49220(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nI
     if (bUseOnMerc && pUnit->dwUnitType == UNIT_PLAYER && pGame->bExpansion && (ITEMS_CheckItemTypeId(pItem, ITEMTYPE_HEALING_POTION) || ITEMS_CheckItemTypeId(pItem, ITEMTYPE_THAWING_POTION) || ITEMS_CheckItemTypeId(pItem, ITEMTYPE_ANTIDOTE_POTION)))
     {
         D2UnitStrc* pMerc = sub_6FC7E8B0(pGame, pUnit, PETTYPE_HIREABLE, 0);
-        if (pMerc && !SKILLITEM_pSpell_Handler(pGame, pMerc, pItem, pItem, nX, nY))
+        if (!SKILLITEM_pSpell_Handler(pGame, pMerc ? pMerc : pUnit, pItem, pItem, nX, nY))
         {
             return 0;
         }
@@ -5208,17 +5213,14 @@ int32_t __fastcall D2GAME_Transmogrify_6FC4A660(D2GameStrc* pGame, D2UnitStrc* p
 }
 
 //D2Game.0x6FC4A9B0
-int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc* pItem, uint8_t nBodyLoc)
+int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc* pItem, uint8_t bSkipRequirementCheck)
 {
-    int32_t a3 = 0;
-    if (!sub_6FC42F20(pUnit, pItem, &a3, nBodyLoc))
+    int32_t nBodyLoc = 0;
+    if (!sub_6FC42F20(pUnit, pItem, &nBodyLoc, bSkipRequirementCheck))
     {
         return 0;
     }
 
-    // The parameter is passed on as sub_6FC42F20's bSkipRequirementCheck (all callers pass 0); the
-    // item goes to the body location that function found. D2MOO placed it at location 0 (none).
-    nBodyLoc = (uint8_t)a3;
 
     if (!INVENTORY_PlaceItemInBodyLoc(pUnit->pInventory, pItem, nBodyLoc))
     {
@@ -5466,7 +5468,7 @@ int32_t __fastcall sub_6FC4AD80(D2GameStrc* pGame, D2UnitStrc* pPlayer, D2UnitSt
 
                     if (sub_6FC4AB10(pPlayer, pCorpseItem, &pPlayerItem, &pOtherPlayerItem, &nBodyLoc))
                     {
-                        D2_ASSERT(INVENTORY_GetItemFromBodyLoc(pPlayerInventory, nBodyLoc));
+                        D2_ASSERT(!INVENTORY_GetItemFromBodyLoc(pPlayerInventory, nBodyLoc));
 
                         if (INVENTORY_PlaceItemInBodyLoc(pPlayerInventory, pCorpseItem, nBodyLoc))
                         {
@@ -5985,7 +5987,7 @@ void __fastcall sub_6FC4BBB0(D2GameStrc* pGame, D2UnitStrc* pItem, D2UnitStrc* p
 {
     ITEMS_SetItemFlag(pItem, IFLAG_IDENTIFIED, 1);
 
-    if (pItem && pItem->dwAnimMode == IMODE_STORED)
+    if (pItem && pItem->dwAnimMode != IMODE_STORED)
     {
         return;
     }

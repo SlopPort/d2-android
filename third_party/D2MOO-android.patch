@@ -1,5 +1,5 @@
 diff --git a/source/D2Common/include/Drlg/D2DrlgDrlg.h b/source/D2Common/include/Drlg/D2DrlgDrlg.h
-index 8ae09e0..13e2294 100644
+index 8ae09e05..13e22944 100644
 --- a/source/D2Common/include/Drlg/D2DrlgDrlg.h
 +++ b/source/D2Common/include/Drlg/D2DrlgDrlg.h
 @@ -461,7 +461,11 @@ struct D2DrlgLevelStrc
@@ -15,7 +15,7 @@ index 8ae09e0..13e2294 100644
  	int32_t nLevelLink;							//0x08
  	int32_t nLevelLinkEx;						//0x0C
 diff --git a/source/D2Common/src/DataTbls/DataTbls.cpp b/source/D2Common/src/DataTbls/DataTbls.cpp
-index 30caa97..208678d 100644
+index 30caa97d..208678d1 100644
 --- a/source/D2Common/src/DataTbls/DataTbls.cpp
 +++ b/source/D2Common/src/DataTbls/DataTbls.cpp
 @@ -671,6 +671,24 @@ void* __stdcall DATATBLS_CompileTxt(HD2ARCHIVE hArchive, const char* szName, D2B
@@ -44,7 +44,7 @@ index 30caa97..208678d 100644
  	else
  	{
 diff --git a/source/D2Common/src/DataTbls/LevelsTbls.cpp b/source/D2Common/src/DataTbls/LevelsTbls.cpp
-index 3043f3e..87d73f9 100644
+index 428d3152..7bc68465 100644
 --- a/source/D2Common/src/DataTbls/LevelsTbls.cpp
 +++ b/source/D2Common/src/DataTbls/LevelsTbls.cpp
 @@ -8,6 +8,14 @@
@@ -62,7 +62,7 @@ index 3043f3e..87d73f9 100644
  static const char* gszAutomapLevelNames[] =
  {
  	"None",
-@@ -1047,11 +1055,23 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
+@@ -1053,11 +1061,23 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
  	for (int i = 0; i < nAutomapTxtRecordCount; ++i)
  	{
  		nLevelCounter = 0;
@@ -86,7 +86,7 @@ index 3043f3e..87d73f9 100644
  		pAutomap[i].dwAutomapLevelType = nLevelCounter;
  
  		nTileCounter = 0;
-@@ -1088,14 +1108,14 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
+@@ -1094,14 +1114,14 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
  	sgptDataTables->pAutoMap = pAutomap;
  	sgptDataTables->nAutoMap = nAutomapTxtRecordCount;
  
@@ -103,7 +103,7 @@ index 3043f3e..87d73f9 100644
  
  		while (nCounter + 1 < nAutomapTxtRecordCount)
  		{
-@@ -1109,7 +1129,7 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
+@@ -1115,7 +1135,7 @@ void __fastcall DATATBLS_LoadAutomapTxt(HD2ARCHIVE hArchive)
  
  		++nCounter;
  
@@ -112,7 +112,7 @@ index 3043f3e..87d73f9 100644
  	}
  }
  
-@@ -1121,8 +1141,8 @@ int __fastcall DATATBLS_GetAutomapCellId(uint32_t dwAutomapLevelType, uint32_t d
+@@ -1127,8 +1147,8 @@ int __fastcall DATATBLS_GetAutomapCellId(uint32_t dwAutomapLevelType, uint32_t d
  	int nCels = 0;
  	int i = 0;
  
@@ -124,10 +124,10 @@ index 3043f3e..87d73f9 100644
  	if (!dwAutomapLevelType || nStart == -1)
  	{
 diff --git a/source/D2Common/src/Path/Step.cpp b/source/D2Common/src/Path/Step.cpp
-index 2cef67e..be15a21 100644
+index 52540586..7e028928 100644
 --- a/source/D2Common/src/Path/Step.cpp
 +++ b/source/D2Common/src/Path/Step.cpp
-@@ -816,7 +816,9 @@ BOOL __stdcall D2Common_10232(D2DynamicPathStrc* pPath, D2UnitStrc* pUnit, D2Act
+@@ -1039,7 +1039,9 @@ BOOL __stdcall D2Common_10232(D2DynamicPathStrc* pPath, D2UnitStrc* pUnit, D2Act
  	{
  		pPath->dwFlags |= PATH_UNKNOWN_FLAG_0x00001;
  	}
@@ -139,7 +139,7 @@ index 2cef67e..be15a21 100644
  #endif
  	D2_ASSERT(COLLISION_GetRoomBySubTileCoordinates(pDestRoom, nTargetX, nTargetY));
 diff --git a/source/D2Game/include/PLAYER/PlayerStats.h b/source/D2Game/include/PLAYER/PlayerStats.h
-index 3479e8a..f10b02a 100644
+index 3479e8a3..f10b02a7 100644
 --- a/source/D2Game/include/PLAYER/PlayerStats.h
 +++ b/source/D2Game/include/PLAYER/PlayerStats.h
 @@ -1,5 +1,6 @@
@@ -161,7 +161,7 @@ index 3479e8a..f10b02a 100644
 +void __fastcall PLAYERSTATS_ResetSkills(D2GameStrc* pGame, D2UnitStrc* pUnit);
 +#endif
 diff --git a/source/D2Game/include/SKILLS/Skills.h b/source/D2Game/include/SKILLS/Skills.h
-index 91b696a..9def8f5 100644
+index 91b696a6..9def8f51 100644
 --- a/source/D2Game/include/SKILLS/Skills.h
 +++ b/source/D2Game/include/SKILLS/Skills.h
 @@ -83,7 +83,11 @@ struct D2EffectStrc
@@ -191,7 +191,7 @@ index 91b696a..9def8f5 100644
  void __fastcall sub_6FD14C30(D2UnitStrc* pUnit);
  //D2Game.0x6FD14C60
 diff --git a/source/D2Game/src/GAME/Game.cpp b/source/D2Game/src/GAME/Game.cpp
-index 4bff91b..9d5b115 100644
+index d93dcf3a..14e788fc 100644
 --- a/source/D2Game/src/GAME/Game.cpp
 +++ b/source/D2Game/src/GAME/Game.cpp
 @@ -47,8 +47,11 @@
@@ -252,7 +252,7 @@ index 4bff91b..9d5b115 100644
  
  //D2Game.0x6FC357C0
 diff --git a/source/D2Game/src/ITEMS/ItemMode.cpp b/source/D2Game/src/ITEMS/ItemMode.cpp
-index 3081156..a18dda3 100644
+index 9ece7ac1..86eec894 100644
 --- a/source/D2Game/src/ITEMS/ItemMode.cpp
 +++ b/source/D2Game/src/ITEMS/ItemMode.cpp
 @@ -29,6 +29,7 @@
@@ -295,22 +295,19 @@ index 3081156..a18dda3 100644
 +                    return 1;
 +                }
 +#endif
- 
-                 SUNIT_AttachSound(pUnit, 19, pUnit);
-             }
-@@ -5187,6 +5216,10 @@ int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc
+                 else
+                 {
+                     // Original 6FC483A9: any other item code gives up silently (no sound, a6 unchanged).
+@@ -5192,6 +5221,7 @@ int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc
          return 0;
      }
  
-+    // The parameter is passed on as sub_6FC42F20's bSkipRequirementCheck (all callers pass 0); the
-+    // item goes to the body location that function found. D2MOO placed it at location 0 (none).
-+    nBodyLoc = (uint8_t)a3;
 +
      if (!INVENTORY_PlaceItemInBodyLoc(pUnit->pInventory, pItem, nBodyLoc))
      {
          FOG_DisplayAssert("0", __FILE__, __LINE__);
 diff --git a/source/D2Game/src/MONSTER/MonsterSpawn.cpp b/source/D2Game/src/MONSTER/MonsterSpawn.cpp
-index 7d4bb08..f2d5537 100644
+index efbae569..c72a428e 100644
 --- a/source/D2Game/src/MONSTER/MonsterSpawn.cpp
 +++ b/source/D2Game/src/MONSTER/MonsterSpawn.cpp
 @@ -1,3 +1,4 @@
@@ -666,21 +663,8 @@ index 7d4bb08..f2d5537 100644
  //void __fastcall MONSTERSPAWN_SetupNormalMods(D2UnkMonCreateStrc* pMonCreate, D2UnitStrc* pUnit)
  //{
  //    v64 = v58->nMonsterId;
-diff --git a/source/D2Game/src/OBJECTS/ObjRgn.cpp b/source/D2Game/src/OBJECTS/ObjRgn.cpp
-index a610849..4dbbb77 100644
---- a/source/D2Game/src/OBJECTS/ObjRgn.cpp
-+++ b/source/D2Game/src/OBJECTS/ObjRgn.cpp
-@@ -41,7 +41,7 @@ int32_t __fastcall OBJRGN_AllocObjectControl(D2GameStrc* pGame)
-         pObjectRegion->nAct = pLevelsTxtRecord->nAct;
-         pObjectRegion->nPopulatedRooms = INT_MAX;
-         pObjectRegion->nTrapMonsterId = -1;
--        pGame->pObjectControl->pObjectRegion[0] = pObjectRegion;
-+        pGame->pObjectControl->pObjectRegion[i] = pObjectRegion; // D2MOO stored every region in slot 0
-     }
- 
-     int32_t nShrineSubTypes[8] = {};
 diff --git a/source/D2Game/src/PLAYER/PlayerList.cpp b/source/D2Game/src/PLAYER/PlayerList.cpp
-index f83fa57..a1a0599 100644
+index f83fa57a..a1a05997 100644
 --- a/source/D2Game/src/PLAYER/PlayerList.cpp
 +++ b/source/D2Game/src/PLAYER/PlayerList.cpp
 @@ -10,7 +10,12 @@
@@ -697,7 +681,7 @@ index f83fa57..a1a0599 100644
  
  //D2Game.0x6FCBA690
 diff --git a/source/D2Game/src/PLAYER/PlayerStats.cpp b/source/D2Game/src/PLAYER/PlayerStats.cpp
-index fa701b9..9ef33f7 100644
+index fa701b93..9ef33f7f 100644
 --- a/source/D2Game/src/PLAYER/PlayerStats.cpp
 +++ b/source/D2Game/src/PLAYER/PlayerStats.cpp
 @@ -197,3 +197,150 @@ int32_t __fastcall PLAYERSTATS_SpendStatPoint(D2UnitStrc* pUnit, int32_t nStatId
@@ -852,10 +836,10 @@ index fa701b9..9ef33f7 100644
 +}
 +#endif
 diff --git a/source/D2Game/src/PLAYER/PlrSave.cpp b/source/D2Game/src/PLAYER/PlrSave.cpp
-index 2981358..0ce12dd 100644
+index 6349cc2f..bf95a654 100644
 --- a/source/D2Game/src/PLAYER/PlrSave.cpp
 +++ b/source/D2Game/src/PLAYER/PlrSave.cpp
-@@ -2288,7 +2288,15 @@ int32_t __fastcall D2GAME_SAVE_GetUnitDataFromFile_6FC8CB40(D2GameStrc* pGame, D
+@@ -2289,7 +2289,15 @@ int32_t __fastcall D2GAME_SAVE_GetUnitDataFromFile_6FC8CB40(D2GameStrc* pGame, D
          if (a4)
          {
              D2UnitStrc* pPlayer = nullptr;
@@ -872,56 +856,11 @@ index 2981358..0ce12dd 100644
              if (pPlayer)
              {
                  QUESTS_SequenceCycler(pGame, pPlayer, 0);
-diff --git a/source/D2Game/src/PLAYER/PlrSave2.cpp b/source/D2Game/src/PLAYER/PlrSave2.cpp
-index 6caaf0d..0730635 100644
---- a/source/D2Game/src/PLAYER/PlrSave2.cpp
-+++ b/source/D2Game/src/PLAYER/PlrSave2.cpp
-@@ -511,13 +511,15 @@ int32_t __fastcall PLRSAVE2_CreateSaveFile(D2GameStrc* pGame, D2UnitStrc* pPlaye
-         return 2;
-     }
- 
-+    // The header writer moves pData past the header; the size and checksum below cover the whole file.
-+    uint8_t* const pFileStart = pData;
-+    const uint8_t* pEnd = &pData[nMaxSize];
-     int32_t nResult = PLRSAVE2_WriteSaveHeader(pGame, pPlayer, &pData, &pData[nMaxSize]);
-     if (nResult)
-     {
-         return nResult;
-     }
- 
--    const uint8_t* pEnd = &pData[nMaxSize];
-     
-     uint8_t* ppSection = pData;
-     if (ppSection + 298 > pEnd)
-@@ -619,10 +621,10 @@ int32_t __fastcall PLRSAVE2_CreateSaveFile(D2GameStrc* pGame, D2UnitStrc* pPlaye
-         }
-     }
- 
--    *pSize = ppSection - pData;
-+    *pSize = ppSection - pFileStart;
- 
--    *((uint32_t*)pData + 2) = *pSize;
--    *((uint32_t*)pData + 3) = FOG_ComputeChecksum(pData, *pSize);
-+    *((uint32_t*)pFileStart + 2) = *pSize;
-+    *((uint32_t*)pFileStart + 3) = FOG_ComputeChecksum(pFileStart, *pSize);
- 
-     return 0;
- }
-@@ -1607,7 +1609,8 @@ int32_t __fastcall PLRSAVE2_ProcessSaveFile(D2GameStrc* pGame, D2ClientStrc* pCl
- 
-         uint8_t* pSectionEnd = pSection + 298;
-         const uint32_t nVersion = pSaveHeader->dwVersion;
--        if (pSectionEnd > pSaveFileEnd || pSaveHeader->dwHeaderMagic != '!ooW' || nVersion != 6)
-+        // The quest section starts with its own header ('Woo!', version 6; written by PLRSAVE2_CreateSaveFile).
-+        if (pSectionEnd > pSaveFileEnd || *(uint32_t*)pSection != '!ooW' || *(uint32_t*)&pSection[4] != 6)
-         {
-             nErrorCode = PLRSAVE2ERROR_BAD_QUESTRECORD;
-         }
 diff --git a/source/D2Game/src/SKILLS/Skills.cpp b/source/D2Game/src/SKILLS/Skills.cpp
-index 32755f1..c90d582 100644
+index cd7c97df..678ab9cf 100644
 --- a/source/D2Game/src/SKILLS/Skills.cpp
 +++ b/source/D2Game/src/SKILLS/Skills.cpp
-@@ -3741,7 +3741,11 @@ void __fastcall sub_6FD149B0(D2GameStrc* pGame, D2EffectStrc* pEffect)
+@@ -3743,7 +3743,11 @@ void __fastcall sub_6FD149B0(D2GameStrc* pGame, D2EffectStrc* pEffect)
  }
  
  //D2Game.0x6FD14BD0
@@ -933,46 +872,8 @@ index 32755f1..c90d582 100644
  {
      D2EffectStrc effect = {};
  
-diff --git a/source/D2Game/src/UNIT/Party.cpp b/source/D2Game/src/UNIT/Party.cpp
-index 1194066..9ab8278 100644
---- a/source/D2Game/src/UNIT/Party.cpp
-+++ b/source/D2Game/src/UNIT/Party.cpp
-@@ -19,7 +19,8 @@
- void __fastcall PARTY_AllocPartyControl(D2GameStrc* pGame)
- {
-     D2_ASSERT(pGame);
--    D2_ASSERT(pGame->pPartyControl);
-+    // D2MOO checked for an existing control here; the control is created by this function.
-+    D2_ASSERT(!pGame->pPartyControl);
- 
-     D2PartyControlStrc* pPartyControl = D2_ALLOC_STRC_POOL(pGame->pMemoryPool, D2PartyControlStrc);
-     D2_ASSERT(pPartyControl);
-diff --git a/source/D2Game/src/UNIT/SUnitInactive.cpp b/source/D2Game/src/UNIT/SUnitInactive.cpp
-index b0ac6ca..1ce21b8 100644
---- a/source/D2Game/src/UNIT/SUnitInactive.cpp
-+++ b/source/D2Game/src/UNIT/SUnitInactive.cpp
-@@ -694,7 +694,9 @@ void __fastcall SUNITINACTIVE_CompressUnitIfNeeded(D2GameStrc* pGame, D2UnitStrc
- 			bCompress = 1;
- 		}
- 
--		switch (pUnit->dwUnitType)
-+		// Read before the switch: compressing an item frees it (the original kept the type in a register).
-+		const int32_t nUnitType = pUnit->dwUnitType;
-+		switch (nUnitType)
- 		{
- 		case UNIT_PLAYER:
- 		{
-@@ -755,7 +757,7 @@ void __fastcall SUNITINACTIVE_CompressUnitIfNeeded(D2GameStrc* pGame, D2UnitStrc
- 			break;
- 		}
- 
--		if (pUnit->dwUnitType != UNIT_ITEM)
-+		if (nUnitType != UNIT_ITEM)
- 		{
- 			SUNIT_RemoveUnit(pGame, pUnit);
- 		}
 diff --git a/source/D2Game/src/UNIT/SUnitNpc.cpp b/source/D2Game/src/UNIT/SUnitNpc.cpp
-index 9b52d12..b8b4ef5 100644
+index 831da662..dbe15258 100644
 --- a/source/D2Game/src/UNIT/SUnitNpc.cpp
 +++ b/source/D2Game/src/UNIT/SUnitNpc.cpp
 @@ -1212,9 +1212,331 @@ D2UnitStrc* __fastcall sub_6FCC87C0(D2GameStrc* pPlayer, D2UnitStrc* pUnit, D2Un
@@ -1317,7 +1218,7 @@ index 9b52d12..b8b4ef5 100644
  //D2Game.0x6FCC92A0
  int32_t __fastcall D2GAME_NPC_BuyItemHandler_6FCC92A0(D2GameStrc* pGame, D2UnitStrc* pPlayer, int32_t nNpcUnitId, int32_t nItemId, int32_t nItemMode, uint16_t nTransactionType, int32_t nCost, int32_t bMultibuy)
 diff --git a/source/Fog/include/Fog.h b/source/Fog/include/Fog.h
-index ad15c43..61e48ec 100644
+index ad15c43d..61e48ec3 100644
 --- a/source/Fog/include/Fog.h
 +++ b/source/Fog/include/Fog.h
 @@ -86,7 +86,11 @@ struct D2BinFieldStrc

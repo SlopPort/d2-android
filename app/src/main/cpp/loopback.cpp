@@ -34,14 +34,14 @@ int32_t readList(int n, uint8_t* pBuffer, int32_t nBufferSize) {
 }
 }
 
-int32_t __stdcall SERVER_ReadFromMessageList0(uint8_t* pBuffer, int32_t nBufferSize) { return readList(0, pBuffer, nBufferSize); }
-int32_t __stdcall SERVER_ReadFromMessageList1(uint8_t* pBuffer, int32_t nBufferSize) { return readList(1, pBuffer, nBufferSize); }
-int32_t __stdcall SERVER_ReadFromMessageList2(uint8_t* pBuffer, int32_t nBufferSize) { return readList(2, pBuffer, nBufferSize); }
+int32_t __stdcall SERVER_ReadSystemPacket(uint8_t* pBuffer, int32_t nBufferSize) { return readList(0, pBuffer, nBufferSize); }
+int32_t __stdcall SERVER_ReadGamePacket(uint8_t* pBuffer, int32_t nBufferSize) { return readList(1, pBuffer, nBufferSize); }
+int32_t __stdcall SERVER_ReadAdminPacket(uint8_t* pBuffer, int32_t nBufferSize) { return readList(2, pBuffer, nBufferSize); }
 int32_t __stdcall SERVER_SetClientGameGUID(int32_t nClientId, int32_t dwGameGuid) { std::lock_guard<std::mutex> l(gLock); gClientGame[nClientId] = dwGameGuid; return 1; }
 int32_t __stdcall SERVER_GetClientGameGUID(int32_t nClientId) { std::lock_guard<std::mutex> l(gLock); auto it = gClientGame.find(nClientId); return it == gClientGame.end() ? 0 : it->second; }
 
 // Server -> client packet.
-uint32_t __stdcall D2NET_10006(int8_t, int32_t, void* pBuffer, uint32_t nBufferSize) {
+uint32_t __stdcall SERVER_SendPacketToClient(int8_t, int32_t, void* pBuffer, uint32_t nBufferSize) {
 	std::lock_guard<std::mutex> l(gLock);
 	if (gToClient.size() < 4096) gToClient.emplace_back((uint8_t*)pBuffer, (uint8_t*)pBuffer + nBufferSize);
 	return nBufferSize;

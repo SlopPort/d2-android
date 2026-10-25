@@ -1327,9 +1327,9 @@ D2UnitStrc* __fastcall sub_6FC4FCA0(D2GameStrc* pGame, D2ActiveRoomStrc* pRoom, 
     coords2.nX = pCoords->nX;
     coords2.nY = pCoords->nY;
 
-    if (D2GAME_GetRoom_6FC52070(pRoom, pCoords->nY + 2, pCoords->nY + 3))
+    if (D2GAME_GetRoom_6FC52070(pRoom, pCoords->nX + 2, pCoords->nY + 3))
     {
-        coords1.nX = pCoords->nY + 2;
+        coords1.nX = pCoords->nX + 2;
         coords1.nY = pCoords->nY + 3;
     }
     else
@@ -1625,20 +1625,18 @@ int32_t __fastcall ITEMS_GetItemLevelForNewItem(D2UnitStrc* pUnit, int32_t nLeve
 {
     if (pUnit)
     {
-        int32_t nLevel = 0;
         if (pUnit->dwUnitType == UNIT_MONSTER)
         {
-            nLevel = STATLIST_UnitGetStatValue(pUnit, STAT_LEVEL, 0);
+            return std::max(STATLIST_UnitGetStatValue(pUnit, STAT_LEVEL, 0), 1);
         }
         else if (pUnit->dwUnitType == UNIT_PLAYER)
         {
-            nLevel = STATLIST_GetUnitBaseStat(pUnit, STAT_LEVEL, 0);
+            return std::max(STATLIST_GetUnitBaseStat(pUnit, STAT_LEVEL, 0), 1);
         }
 
-        return std::max(nLevel, 1);
+        nLevelId = DUNGEON_GetLevelIdFromRoom(UNITS_GetRoom(pUnit));
     }
-
-    if (!nLevelId)
+    else if (!nLevelId)
     {
         return 1;
     }

@@ -254,6 +254,7 @@ int32_t __fastcall SKILLS_SrvSt14_Hydra(D2GameStrc* pGame, D2UnitStrc* pUnit, in
 }
 
 //D2Game.0x6FD15E50
+//1.14d: 0x004E2ED0
 void __fastcall SKILLS_MissileInit_ChargedBolt(D2UnitStrc* pMissile, int32_t a2)
 {
     if (!pMissile)
@@ -261,7 +262,7 @@ void __fastcall SKILLS_MissileInit_ChargedBolt(D2UnitStrc* pMissile, int32_t a2)
         return;
     }
 
-    uint8_t nFrames = MISSILE_GetTotalFrames(pMissile);
+    int32_t nFrames = MISSILE_GetTotalFrames(pMissile);
     if (nFrames >= 78)
     {
         nFrames = 77;
@@ -271,7 +272,7 @@ void __fastcall SKILLS_MissileInit_ChargedBolt(D2UnitStrc* pMissile, int32_t a2)
 
     SEED_InitLowSeed(&pMissile->pSeed, a2 + D2COMMON_10175_PathGetFirstPointX(pMissile->pDynamicPath));
     PATH_SetType(pMissile->pDynamicPath, PATHTYPE_CHARGEDBOLT);
-    PATH_SetNewDistance(pMissile->pDynamicPath, nFrames);
+    PATH_SetNewDistance(pMissile->pDynamicPath, static_cast<uint8_t>(nFrames));
     D2Common_10142(pMissile->pDynamicPath, pMissile, 0);
 }
 
@@ -520,6 +521,8 @@ int32_t __fastcall SKILLS_SrvDo021_Telekinesis(D2GameStrc* pGame, D2UnitStrc* pU
             return 0;
         }
 
+        const int32_t bKnockback = (int32_t)(ITEMS_RollRandomNumber(&pUnit->pSeed) % 100) < pSkillsTxtRecord->dwParam[1];
+
         D2DamageStrc damage = {};
         D2GAME_RollPhysicalDamage_6FD14EC0(pUnit, &damage, nSkillId, nSkillLevel);
         D2GAME_RollElementalDamage_6FD14DD0(pUnit, &damage, nSkillId, nSkillLevel);
@@ -532,7 +535,7 @@ int32_t __fastcall SKILLS_SrvDo021_Telekinesis(D2GameStrc* pGame, D2UnitStrc* pU
             damage.dwHitClass = pSkillsTxtRecord->dwHitClass;
         }
 
-        if ((ITEMS_RollRandomNumber(&pUnit->pSeed) % 100) < pSkillsTxtRecord->dwParam[1])
+        if (bKnockback)
         {
             damage.wResultFlags |= 9u;
         }

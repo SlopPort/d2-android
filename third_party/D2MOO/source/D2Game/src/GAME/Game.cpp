@@ -157,7 +157,7 @@ int32_t __stdcall D2Game_10046()
     memset(gnGamesGUIDs_6FD447F8, 0, sizeof(gnGamesGUIDs_6FD447F8));
     InitializeCriticalSection(&gCriticalSection_6FD45800);
     CLIENTS_Initialize();
-    D2NET_10019(sub_6FC36B20);
+    SERVER_SetRemoveClientCallback(sub_6FC36B20);
     SUNITPROXY_FillGlobalItemCache();
     return TRUE;
 }
@@ -281,7 +281,7 @@ void __fastcall GAME_ResolveGameNameConflict(D2GameStrc* pGameToSanitize, char* 
         {
             // Truncate so that we have enough space for the game ID
             // Somehow the original game truncated at 10 characters instead of 11 ?
-            szGameName[ARRAY_SIZE(D2GameStrc::szGameName) - 1 - nCharactersForSuffix] = '\0';
+            szGameName[ARRAY_SIZE(D2GameStrc::szGameName) - 2 - nCharactersForSuffix] = '\0';
         }
 
         char szGameNameWithID[ARRAY_SIZE(D2GameStrc::szGameName)];
@@ -768,7 +768,7 @@ void __fastcall GAME_SendGameInit(int32_t nClientId, char* szGameName, uint8_t n
 
     if (pGame->nGameType == 1)
     {
-        CLIENT_SetSaveLoaded_6FC34390(pClient);
+        CLIENT_SetGameOwner(pClient);
     }
 
     PARTY_AllocPartyControl(pGame);
@@ -1435,7 +1435,7 @@ void __fastcall CLIENT_SendSaveHeaderPart_6FC37B90(D2GameStrc* pGame, D2ClientSt
         *pPacketData++ = *pData++;
     }
 
-    if (D2NET_10006(0, pClient->dwClientId, pPacket, nDataSize + 7))
+    if (SERVER_SendPacketToClient(D2NET_SEND_SYSTEM, pClient->dwClientId, pPacket, nDataSize + 7))
     {
         pClient->nSaveHeaderDataSentBytes += nDataSize;
 
@@ -1481,7 +1481,7 @@ void __fastcall GAME_EndGame(int32_t nClientId, int32_t a2)
     }
 
     D2ClientStrc* pClient = CLIENTS_GetClientFromClientId(pGame, nClientId);
-    const uint32_t v10 = CLIENT_IsSaveLoaded(pClient);
+    const uint32_t v10 = CLIENT_IsGameOwner(pClient);
     if (v10 || pGame->nGameType)
     {
         D2ClientStrc* i = pGame->pClientList;
@@ -1603,7 +1603,7 @@ void __fastcall sub_6FC37FB0(D2GameStrc* pGame, D2ClientStrc* pClient)
 void __fastcall sub_6FC380D0(D2ClientStrc* pClient, void* pArg)
 {
     D2ClientStrc** ppClient = (D2ClientStrc**)pArg;
-    if (CLIENT_IsSaveLoaded(pClient))
+    if (CLIENT_IsGameOwner(pClient))
     {
         *ppClient = pClient;
     }
@@ -1684,26 +1684,26 @@ void __fastcall sub_6FC38140(void *a1, int32_t a2)
                 tPacket.field_0xf5 = tGameServerInfoEx.word0xD4;
                 memcpy(tPacket.field_0xf6, tGameServerInfoEx.szUnk0xD6, sizeof(tPacket.field_0xf6));
                 memset(tPacket.nZeroed, 0, sizeof(tPacket.nZeroed));
-                D2NET_10006(2, nClientIdx, &tPacket, tPacket.nPacketSubType == 1 ? sizeof(D2GSPacketSrvFF01) : sizeof(D2GSPacketSrvFFFD));
+                SERVER_SendPacketToClient(D2NET_SEND_UNCOMPRESSED, nClientIdx, &tPacket, tPacket.nPacketSubType == 1 ? sizeof(D2GSPacketSrvFF01) : sizeof(D2GSPacketSrvFFFD));
             }
             break;
         case PACKET_ADMIN_CONNECT:
             SERVER_GetIpAddressStringFromClientId(nClientIdx, szIPAddress, 16);
             InterlockedIncrement(&gnNumAdminConnections_6FD45838);
             a3[0] = PACKET_ADMIN_CONNECT;
-            D2NET_10006(2, nClientIdx, a3, 16);
+            SERVER_SendPacketToClient(D2NET_SEND_UNCOMPRESSED, nClientIdx, a3, 16);
             break;
         case PACKET_ADMIN_DISCONNECT:
             SERVER_GetIpAddressStringFromClientId(nClientIdx, szIPAddress, 16);
             a3[0] = PACKET_ADMIN_DISCONNECT;
-            D2NET_10006(2, nClientIdx, a3, 16);
+            SERVER_SendPacketToClient(D2NET_SEND_UNCOMPRESSED, nClientIdx, a3, 16);
             D2NET_10016(nClientIdx);
             InterlockedDecrement(&gnNumAdminConnections_6FD45838);
             break;
         case PACKET_ADMIN_GETIP:
             SERVER_GetIpAddressStringFromClientId(nClientIdx, szIPAddress, 16);
             a3[0] = PACKET_ADMIN_GETIP;
-            D2NET_10006(2, nClientIdx, a3, 16);
+            SERVER_SendPacketToClient(D2NET_SEND_UNCOMPRESSED, nClientIdx, a3, 16);
             break;
         default:
             return;
@@ -1718,7 +1718,7 @@ void __fastcall GAME_ProcessNetworkMessages()
 
     while (1)
     {
-        int32_t nSize = SERVER_ReadFromMessageList0(buffer, 512);
+        int32_t nSize = SERVER_ReadSystemPacket(buffer, 512);
         if (nSize == -1)
         {
             break;
@@ -1728,7 +1728,7 @@ void __fastcall GAME_ProcessNetworkMessages()
 
     while (1)
     {
-        int32_t nSize = SERVER_ReadFromMessageList1(buffer, 512);
+        int32_t nSize = SERVER_ReadGamePacket(buffer, 512);
         if (nSize == -1)
         {
             break;
@@ -1738,7 +1738,7 @@ void __fastcall GAME_ProcessNetworkMessages()
 
     while (1)
     {
-        int32_t nSize = SERVER_ReadFromMessageList2(buffer, 512);
+        int32_t nSize = SERVER_ReadAdminPacket(buffer, 512);
         if (nSize == -1)
         {
             break;
@@ -2233,7 +2233,7 @@ void __fastcall sub_6FC39030(D2GameStrc* pGame, D2ClientStrc* pClient, int32_t a
                         const int32_t nUpdateSize = (499 - pPacketData->nPacketSize) / 9;
                         if (nUpdateSize > 0)
                         {
-                            D2_ASSERT(nUpdateSize < CLIENTS_MAX_UPDATES);
+                            D2_ASSERT(nUpdateSize <= CLIENTS_MAX_UPDATES);
                             CLIENTS_RefreshUnitsUpdateList(pClient, nUpdateSize);
                             D2GAME_PACKETS_SendPacket0x16_UnitsUpdate(pClient);
                         }
@@ -2282,7 +2282,7 @@ void __fastcall sub_6FC39030(D2GameStrc* pGame, D2ClientStrc* pClient, int32_t a
             break;
         }
 
-        if (D2NET_10006(1, pClient->dwClientId, pPacketData->packetData, pPacketData->nPacketSize))
+        if (SERVER_SendPacketToClient(D2NET_SEND_GAME, pClient->dwClientId, pPacketData->packetData, pPacketData->nPacketSize))
         {
             pPacketData->nPacketSize = 0;
             pPacketData->pNext = pClient->tPacketDataList.pPacketDataPool;
@@ -2586,7 +2586,7 @@ int32_t __stdcall D2Game_10057()
 //D2Game.0x6FC39C70 (#10053)
 void __stdcall D2Game_10053(int16_t* pCount, int32_t nArraySize)
 {
-    memset(pCount, 0, nArraySize);
+    memset(pCount, 0, sizeof(*pCount) * (nArraySize + 1));
 
     for (int32_t i = 0; i < 1024; ++i)
     {
@@ -3278,8 +3278,10 @@ void __fastcall D2GameDataTable_TSLink_Unlink(TSLink<D2GameStrc>* pLink)
 void __fastcall D2GameDataTable_GrowableArray_TSExplicitList_SetCount(TSGrowableArray<STORM_EXPLICIT_LIST(D2GameStrc, m_linktoslot)>* pArray, int32_t nUnused, uint32_t nCount)
 {
     D2_MAYBE_UNUSED(nUnused);
-    //TODO: Fix squall impl
-    D2_ASSERTM(nCount >= pArray->Count(), "Squall's implementation is buggy, and won't work if new size is smaller than old one. (should destroy objects after nCount)");
+    for (uint32_t nIndex = nCount; nIndex < pArray->Count(); ++nIndex)
+    {
+        D2GameDataTable_TSExplicitList_UnlinkAll_AndUninitTerminator(&(*pArray)[nIndex]);
+    }
     pArray->SetCount(nCount);
 }
  

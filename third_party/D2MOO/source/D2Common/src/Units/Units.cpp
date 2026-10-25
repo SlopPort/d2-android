@@ -1050,6 +1050,7 @@ void __stdcall UNITS_SetAnimationFrame(D2UnitStrc* pUnit, int nFrame)
 }
 
 //D2Common.0x6FDBEE60 (#10373)
+//1.14d: 0x00623E00
 void __stdcall UNITS_StopSequence(D2UnitStrc* pUnit)
 {
 	pUnit->nActionFrame = 0;
@@ -1318,6 +1319,7 @@ BOOL UNITS_CanAnimModeUseAttackRate(int nUnitType, int nAnimMode, D2UnitStrc* pU
 		{
 			pAnimModeModulators = &gaMonModesAnimModulators[nAnimMode];
 		}
+		break;
 
 	default:
 		return FALSE;
@@ -1708,6 +1710,7 @@ __forceinline void __fastcall UNITS_UpdateRunWalkAnimRateAndVelocity(D2UnitStrc*
 
 //1.10f: D2Common.0x6FDBF050 (#10376)
 //1.13c: D2Common.0x6FD83110 (#10819)
+//1.14d: 0x00623F50
 void __stdcall UNITS_UpdateAnimRateAndVelocity(D2UnitStrc* pUnit, const char* szFile, int nLine)
 {
 	if (!pUnit)
@@ -1770,6 +1773,7 @@ void __stdcall UNITS_SetAnimationSpeed(D2UnitStrc* pUnit, int nSpeed)
 }
 
 //D2Common.0x6FDBF910 (#10378)
+//1.14d: 0x006217C0
 int __stdcall UNITS_IsAtEndOfFrameCycle(D2UnitStrc* pUnit)
 {
 	D2_ASSERT(pUnit);
@@ -2341,6 +2345,7 @@ int __stdcall UNITS_GetOverlayHeight(D2UnitStrc* pUnit)
 }
 
 //D2Common.0x6FDC08B0 (#10431)
+//1.14d: 0x006223F0
 int __stdcall UNITS_GetDefense(D2UnitStrc* pUnit)
 {
 	D2SkillsTxt* pSkillsTxtRecord = NULL;
@@ -2395,7 +2400,7 @@ int __stdcall UNITS_GetDefense(D2UnitStrc* pUnit)
 		return nTotalDefense;
 	}
 
-	return nTotalDefense + (int)((long long int)nTotalDefense * (long long int)nArmorOverridePercent / 100);
+	return nTotalDefense + DATATBLS_ApplyRatio(nTotalDefense, nArmorOverridePercent, 100);
 }
 
 //D2Common.0x6FDC0AC0 (#10432)

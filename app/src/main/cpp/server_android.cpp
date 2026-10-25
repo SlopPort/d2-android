@@ -92,7 +92,7 @@ size_t __cdecl FileLockAndRead(void* Buffer, size_t ElementSize, size_t ElementC
 
 int32_t __stdcall SERVER_WSAGetLastError() { return 0; }
 void __stdcall SERVER_GetIpAddressStringFromClientId(int32_t, char* szBuffer, int32_t nBufferSize) { SStrCopy(szBuffer, "127.0.0.1", (size_t)nBufferSize); }
-int32_t __stdcall D2NET_10019(D2NET_Unk_Callback) { return 0; }
+int32_t __stdcall SERVER_SetRemoveClientCallback(D2NET_RemoveClientCallback) { return 0; }
 void __stdcall D2NET_10016(int32_t) {}
 void __stdcall D2NET_10015(int32_t, const char*, int32_t) {}
 

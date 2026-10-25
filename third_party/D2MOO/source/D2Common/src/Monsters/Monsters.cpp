@@ -97,7 +97,7 @@ int __fastcall MONSTERS_HirelingInit(BOOL bExpansion, D2UnitStrc* pMonster, int 
 		pHirelingInit->nId = pHirelingTxtRecord->nId;
 
 		nLevel = STATLIST_UnitGetStatValue(pMonster, STAT_LEVEL, 0);
-		nRand = (int)SEED_RollRandomNumber(&pSeed) % 5;
+		nRand = (uint32_t)SEED_RollRandomNumber(&pSeed) % 5;
 		if (nRand >= nLevel - pHirelingTxtRecord->nHirelingLevel)
 		{
 			nLevelUps = nLevel - pHirelingTxtRecord->nHirelingLevel;
@@ -592,6 +592,7 @@ int __stdcall D2Common_11070(int nMonsterId, unsigned int nComponent, unsigned i
 }
 
 //D2Common.0x6FDA54E0 (#11050)
+//1.14d: 0x0063E6B0
 int __stdcall D2Common_11050(D2UnitStrc* pUnit, int a2)
 {
 	D2MonStatsTxt* pMonStatsTxtRecord = NULL;

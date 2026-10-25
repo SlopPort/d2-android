@@ -2408,7 +2408,7 @@ static bool GetCloseForRitualOrBaptism(D2GameStrc* pGame, D2UnitStrc* pUnit, int
 	}
 	else
 	{
-		if (AI_RollPercentage(pUnit) < 35)
+		if (AI_RollPercentage(pUnit) < 34)
 		{
 			AITACTICS_WalkCloseToUnit(pGame, pUnit, nMaxDistance + 1);
 		}
@@ -9153,7 +9153,7 @@ void __fastcall sub_6FCE34B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc* p
 		return;
 	}
 
-	const int32_t nDistance = AIUTIL_GetDistanceToCoordinates_FullUnitSize(pArg->pTarget, pTarget);
+	const int32_t nDistance = AIUTIL_GetDistanceToCoordinates_FullUnitSize(pArg->pUnit, pTarget);
 	if (nDistance > 1)
 	{
 		return;
@@ -9749,6 +9749,7 @@ enum D2C_HireableAIParams
 };
 
 //D2Game.0x6FCE4610
+//1.14d: 0x005E5050
 void __fastcall sub_6FCE4610(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nClassId, D2UnitStrc* pOwner, D2UnitStrc* pTarget, D2SeedStrc* pSeed, D2AiTickParamStrc* pAiTickParam)
 {
 	uint32_t nChance = 0;
@@ -14425,7 +14426,7 @@ void __fastcall AITHINK_Fn106_143_ShadowMaster(D2GameStrc* pGame, D2UnitStrc* pU
 			}
 		}
 
-		if (AITHINK_GetSquaredDistance(pUnit, pOwner) >= 144 && sub_6FCE34E0(pGame, pUnit, pTarget, pOwner, pAiTickParam->bCombat, pAiTickParam, 0, 6))
+		if (AITHINK_GetSquaredDistance(pUnit, pOwner) <= 144 && sub_6FCE34E0(pGame, pUnit, pTarget, pOwner, pAiTickParam->bCombat, pAiTickParam, 0, 6))
 		{
 			return;
 		}
@@ -14746,6 +14747,12 @@ void __fastcall AITHINK_Fn106_143_ShadowMaster(D2GameStrc* pGame, D2UnitStrc* pU
 					if (nLifePercentage <= 66)
 					{
 						pSkillTarget = 0;
+						if (!pOwner)
+						{
+							ITEMS_RollLimitedRandomNumber(&pUnit->pSeed, 40);
+							ITEMS_RollLimitedRandomNumber(&pUnit->pSeed, 40);
+						}
+
 						if (nLifePercentage < 45)
 						{
 							nCurrentValue += 20;
@@ -14896,7 +14903,7 @@ void __fastcall AITHINK_Fn106_143_ShadowMaster(D2GameStrc* pGame, D2UnitStrc* pU
 					break;
 				}
 
-				if (nCurrentValue > shadowMasterSkills[nCounter].nChance)
+				if (nCurrentValue > shadowMasterSkills[nCounter - 1].nChance)
 				{
 					shadowMasterSkills[nCounter].pTarget = pSkillTarget;
 					shadowMasterSkills[nCounter].nSkillId = nSkillId;
@@ -15698,7 +15705,7 @@ void __fastcall AITHINK_Fn108_SpiritWolf(D2GameStrc* pGame, D2UnitStrc* pUnit, D
 	{
 		if (pTarget)
 		{
-			if (pAiTickParam->pMonstatsTxt)
+			if (bCombat)
 			{
 				AITACTICS_ChangeModeAndTargetUnit(pGame, pUnit, MONMODE_ATTACK1, pTarget);
 				AITACTICS_Idle(pGame, pUnit, AI_GetParamValue(pGame, pAiTickParam, DRUIDWOLF_AI_PARAM_STALL_DURATION));
