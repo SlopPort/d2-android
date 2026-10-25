@@ -37,3 +37,20 @@ monsters (frog demons, Act III) are not in D2MOO and are assumed.
 D2MOO's `Fog.cpp`, `D2LangStubs.cpp`, `D2CMP.cpp` (all stubs), `D2Game/src/GAME/Task.cpp` (Windows
 worker threads) and the `DllMain.cpp` files are excluded in `app/src/main/cpp/CMakeLists.txt`; our
 `*_android.cpp` files replace them.
+
+## Upstream
+
+Fixes sent to ThePhrozenKeep/D2MOO: #309 (inactive item use-after-free), #310 (object region index)
+and #311 (party control assert) are merged; #312 (vendor buying) is in review.
+
+Game-logic stubs left in upstream D2MOO (master 2f912ff, 2026-10-25): functions whose body is only a
+`return` above commented-out decompilation, found with a scan of all `.cpp` files.
+
+| Function | File | Effect | Here |
+| --- | --- | --- | --- |
+| `D2GAME_SpawnNormalMonster_6FC68E30`, `MONSTERSPAWN_SetupNormalMods` | `MONSTER/MonsterSpawn.cpp` | no monster or NPC is ever spawned | implemented, one part `UNVERIFIED`; to check against 1.14d before sending |
+| `sub_6FCC88B0` | `UNIT/SUnitNpc.cpp` | nothing can be bought | implemented, checked against 1.14d (#312) |
+| `D2GAME_SAVE_ProcessSaveFile_6FC8C0C0` | `PLAYER/PlrSave.cpp` | `.d2s` characters cannot be loaded | not done |
+
+The other stubs found (D2Win edit boxes and controls, D2Gfx tile drawing) belong to the original
+client's interface and renderer, which this port does not use.
