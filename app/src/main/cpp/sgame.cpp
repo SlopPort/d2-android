@@ -479,7 +479,7 @@ int sgame_item_price(int nNpcGuid, int nItemGuid, int nTransactionType) {
 void sgame_buy(int nNpcGuid, int nItemGuid, int nTab, int nCost) {
 	if (!sgame_ready()) return;
 	D2GSPacketClt32 p = {};
-	p.nHeader = 0x32; p.dwNpcGUID = nNpcGuid; p.dwItemGUID = nItemGuid; p.nItemMode = (uint16_t)nTab; p.dwCost = nCost;
+	p.nHeader = 0x32; p.dwNpcGUID = nNpcGuid; p.dwItemGUID = nItemGuid; p.nTransactionType = (uint16_t)nTab; p.dwCost = nCost; // the server ignores dwCost and prices it itself
 	loopback_send(1, kClientId, &p, sizeof p);
 }
 

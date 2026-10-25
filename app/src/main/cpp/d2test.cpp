@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 				sgame_debug_set_gold(5000);
 				int price = sgame_item_price(npc, store[0].guid, 0);
 				std::vector<InvItem> before; sgame_inventory(before);
-				sgame_buy(npc, store[0].guid, 0, price);
+				sgame_buy(npc, store[0].guid, 0, 0); // the client's price is ignored: 0 must still cost the full price
 				for (int k = 0; k < 10; ++k) { usleep(40000); sgame_tick(); }
 				std::vector<InvItem> after; sgame_inventory(after);
 				int goods[2]; sgame_player_goods(goods);
