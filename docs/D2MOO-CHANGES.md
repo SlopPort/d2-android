@@ -48,9 +48,9 @@ Game-logic stubs left in upstream D2MOO (master 2f912ff, 2026-10-25): functions 
 
 | Function | File | Effect | Here |
 | --- | --- | --- | --- |
-| `D2GAME_SpawnNormalMonster_6FC68E30`, `MONSTERSPAWN_SetupNormalMods` | `MONSTER/MonsterSpawn.cpp` | no monster or NPC is ever spawned | implemented, checked against 1.14d |
+| `D2GAME_SpawnNormalMonster_6FC68E30`, `MONSTERSPAWN_SetupNormalMods` | `MONSTER/MonsterSpawn.cpp` | no monster or NPC is ever spawned | implemented, checked against 1.14d (#315) |
 | `sub_6FCC88B0` | `UNIT/SUnitNpc.cpp` | nothing can be bought | implemented, checked against 1.14d (#312) |
-| `D2GAME_SAVE_ProcessSaveFile_6FC8C0C0` | `PLAYER/PlrSave.cpp` | `.d2s` characters cannot be loaded | not done |
+| `D2GAME_SAVE_ProcessSaveFile_6FC8C0C0` | `PLAYER/PlrSave.cpp` | only saves of format version 91 or lower (before 1.08) cannot be loaded; 1.10-1.14d saves (version 96) go through the implemented `PLRSAVE2_ProcessSaveFile` | not needed for 1.14d |
 
 The other stubs found (D2Win edit boxes and controls, D2Gfx tile drawing) belong to the original
 client's interface and renderer, which this port does not use.
