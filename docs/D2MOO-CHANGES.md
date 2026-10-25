@@ -22,8 +22,8 @@ D2MOO upstream commit: see `third_party/D2MOO-UPSTREAM.txt`. The full diff of D2
 | `D2Game/src/UNIT/SUnitNpc.cpp` | implemented `sub_6FCC88B0` (buying from a vendor) from its decompilation comment | stub that returned 0: nothing could be bought |
 | `D2Common/src/Path/Step.cpp` | the 1.13c call `PATH_RecacheRoomIfNeeded(path, x, y, room)` is skipped on Android | D2MOO has no such overload; the 1.14d build keeps 1.10f behaviour there (`UNVERIFIED`) |
 
-`UNVERIFIED` in `MonsterSpawn.cpp`: the four offsets `unk_6FD28BC8` used when placing SpawnCol=1
-monsters (frog demons, Act III) are not in D2MOO and are assumed.
+`MonsterSpawn.cpp` was checked against 1.14d `Game.0x5B2A00`/`0x5B21B0` by two independent passes; the
+SpawnCol=1 neighbour offsets come from the table at `Game.0x6E2D50`.
 
 ## squall (`third_party/D2MOO/external/squall`, upstream commit in D2MOO-UPSTREAM.txt)
 
@@ -48,7 +48,7 @@ Game-logic stubs left in upstream D2MOO (master 2f912ff, 2026-10-25): functions 
 
 | Function | File | Effect | Here |
 | --- | --- | --- | --- |
-| `D2GAME_SpawnNormalMonster_6FC68E30`, `MONSTERSPAWN_SetupNormalMods` | `MONSTER/MonsterSpawn.cpp` | no monster or NPC is ever spawned | implemented, one part `UNVERIFIED`; to check against 1.14d before sending |
+| `D2GAME_SpawnNormalMonster_6FC68E30`, `MONSTERSPAWN_SetupNormalMods` | `MONSTER/MonsterSpawn.cpp` | no monster or NPC is ever spawned | implemented, checked against 1.14d |
 | `sub_6FCC88B0` | `UNIT/SUnitNpc.cpp` | nothing can be bought | implemented, checked against 1.14d (#312) |
 | `D2GAME_SAVE_ProcessSaveFile_6FC8C0C0` | `PLAYER/PlrSave.cpp` | `.d2s` characters cannot be loaded | not done |
 

@@ -263,8 +263,9 @@ void __fastcall sub_6FC69C00(D2UnkMonCreateStrc* pMonCreate, D2UnitStrc* pUnit);
 
 D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pMonCreate)
 {
-    // Written from the Hex-Rays output kept below (D2Game 1.10f 0x6FC68E30): same checks, the same
-    // room-seed rolls in the same order, the same search pattern. Done for the Android port.
+    // Written from the Hex-Rays output kept below (D2Game 1.10f 0x6FC68E30) and checked against 1.14d
+    // Game.0x5B2A00 (SetupNormalMods: 0x5B21B0): same checks, the same room-seed rolls in the same
+    // order, the same search pattern.
     const int32_t nMonsterId = pMonCreate->nMonsterId;
     if (nMonsterId < 0 || nMonsterId >= sgptDataTables->nMonStatsTxtRecordCount)
     {
@@ -325,6 +326,7 @@ D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pM
     const int32_t nMaxRadius = pMonCreate->field_20 >= 0 ? 3 * pMonCreate->field_20 : 0;
     int32_t nX = 0;
     int32_t nY = 0;
+    bool bFloorTilePath = false;
 
     if (pMonStats2TxtRecord->nSpawnCol != 1
         || (nMonsterId >= MONSTER_TENTACLE1 && nMonsterId <= MONSTER_TENTACLEHEAD3)
@@ -403,6 +405,7 @@ D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pM
     }
     else
     {
+        bFloorTilePath = true;
         // On a random floor tile flagged 2 (frog demons).
         int32_t nFloorCount = 0;
         D2DrlgTileDataStrc* pFloors = DUNGEON_GetFloorTilesFromRoom(pRoom, &nFloorCount);
@@ -415,8 +418,8 @@ D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pM
             }
             D2DrlgCoordsStrc tRoomCoords = {};
             DUNGEON_GetRoomCoordinates(pRoom, &tRoomCoords);
-            // UNVERIFIED: unk_6FD28BC8 is not in D2MOO; four neighbour offsets assumed.
-            static const int32_t kOffsets[4][2] = { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } };
+            // unk_6FD28BC8: the four neighbours checked around the tile centre (1.14d table at Game.0x6E2D50).
+            static const int32_t kOffsets[4][2] = { { 0, -3 }, { 3, 0 }, { 0, 3 }, { -3, 0 } };
             for (int32_t i = nStart; i != nStart - 1; i = (i + 1) % nFloorCount)
             {
                 D2DrlgTileDataStrc* pTile = &pFloors[i];
@@ -449,9 +452,10 @@ D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pM
         }
     }
 
-    // The point may lie in a neighbouring room.
+    // Only the floor-tile path looks the point up in the neighbouring rooms (1.14d Game.0x5B2BBF); the
+    // ring search keeps the requested room even when the point lies outside it.
     D2ActiveRoomStrc* pSpawnRoom = pRoom;
-    if (nX && nY && !(nX >= pRoom->tCoords.nSubtileX && nX < pRoom->tCoords.nSubtileX + pRoom->tCoords.nSubtileWidth && nY >= pRoom->tCoords.nSubtileY && nY < pRoom->tCoords.nSubtileY + pRoom->tCoords.nSubtileHeight))
+    if (bFloorTilePath && nX && nY && !(nX >= pRoom->tCoords.nSubtileX && nX < pRoom->tCoords.nSubtileX + pRoom->tCoords.nSubtileWidth && nY >= pRoom->tCoords.nSubtileY && nY < pRoom->tCoords.nSubtileY + pRoom->tCoords.nSubtileHeight))
     {
         D2ActiveRoomStrc** ppRoomList = nullptr;
         int32_t nNumRooms = 0;
@@ -484,7 +488,11 @@ D2UnitStrc* __fastcall D2GAME_SpawnNormalMonster_6FC68E30(D2UnkMonCreateStrc* pM
         return nullptr;
     }
 
-    const int32_t bNeverCount = (nFlags & 8) || (pMonStatsTxtRecord->dwMonStatsFlags & gdwBitMasks[MONSTATSFLAGINDEX_NEVERCOUNT]);
+    int32_t bNeverCount = nFlags & 8; // 8 or 0 as in the original; only compared with 0
+    if (pMonStatsTxtRecord->dwMonStatsFlags & gdwBitMasks[MONSTATSFLAGINDEX_NEVERCOUNT])
+    {
+        bNeverCount = 1;
+    }
     sub_6FC68180(pMonCreate->pGame->pMonReg, pSpawnRoom, pMonster, bNeverCount);
 
     D2RoomCoordListStrc* pCoordList = pMonCreate->pRoomCoordList ? pMonCreate->pRoomCoordList : D2Common_10096(pSpawnRoom, nX, nY);
@@ -1257,7 +1265,7 @@ void __fastcall MONSTERSPAWN_SetupBossMods(D2UnkMonCreateStrc* pMonCreate, D2Uni
 
 //1.10: Inlined
 //1.14d: 0x005B21B0
-// Written from the decompilation below for the Android port: monster types with a fixed unique mod.
+// Written from the decompilation below and checked against 1.14d Game.0x5B21B0: monster types with a fixed unique mod.
 void __fastcall MONSTERSPAWN_SetupNormalMods(D2UnkMonCreateStrc* pMonCreate, D2UnitStrc* pUnit)
 {
     int32_t nMonsterId = pMonCreate->nMonsterId;
